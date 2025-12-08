@@ -10,7 +10,7 @@ Repository-wide instructions for GitHub Copilot coding agent and code review.
 
 ## Tech Stack
 
-- **Runtime:** Node.js 22+
+- **Runtime:** Node.js 24+
 - **Language:** TypeScript 5.3+
 - **MCP Framework:** @modelcontextprotocol/sdk ^1.8.0
 - **Validation:** Zod ^3.22.4
