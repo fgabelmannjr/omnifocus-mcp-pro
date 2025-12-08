@@ -1,4 +1,5 @@
 import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
+import { getSecureTempFilePathDirect } from '../../utils/secureTempFile.js';
 
 export interface QueryOmnifocusParams {
   entity: 'tasks' | 'projects' | 'folders';
@@ -33,8 +34,8 @@ export async function queryOmnifocus(params: QueryOmnifocusParams): Promise<Quer
     // Create JXA script for the query
     const jxaScript = generateQueryScript(params);
     
-    // Write script to temp file and execute
-    const tempFile = `/tmp/omnifocus_query_${Date.now()}.js`;
+    // Write script to temp file with cryptographically secure name and execute
+    const tempFile = getSecureTempFilePathDirect('omnifocus_query', '.js');
     const fs = await import('fs');
     fs.writeFileSync(tempFile, jxaScript);
     

@@ -1,5 +1,6 @@
 import { OmnifocusDatabase } from '../types.js';
 import { executeOmniFocusScript } from './scriptExecution.js';
+import { getSecureTempFilePathDirect } from './secureTempFile.js';
 
 interface CacheEntry {
   data: OmnifocusDatabase;
@@ -155,9 +156,9 @@ class OmniFocusCacheManager {
         })();
       `;
       
-      // Write to temp file and execute
+      // Write to temp file with cryptographically secure name and execute
       const fs = await import('fs');
-      const tempFile = `/tmp/omnifocus_checksum_${Date.now()}.js`;
+      const tempFile = getSecureTempFilePathDirect('omnifocus_checksum', '.js');
       fs.writeFileSync(tempFile, script);
       
       const result = await executeOmniFocusScript(tempFile);

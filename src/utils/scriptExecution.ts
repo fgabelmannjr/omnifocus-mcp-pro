@@ -2,18 +2,18 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFileSync, unlinkSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { existsSync } from 'fs';
+import { getSecureTempFilePath } from './secureTempFile.js';
 
 const execAsync = promisify(exec);
 
 // Helper function to execute OmniFocus scripts
 export async function executeJXA(script: string): Promise<any[]> {
   try {
-    // Write the script to a temporary file in the system temp directory
-    const tempFile = join(tmpdir(), `jxa_script_${Date.now()}.js`);
+    // Write the script to a temporary file with cryptographically secure name
+    const tempFile = getSecureTempFilePath('jxa_script', '.js');
     
     // Write the script to the temporary file
     writeFileSync(tempFile, script);
@@ -76,8 +76,8 @@ export async function executeOmniFocusScript(scriptPath: string, args?: any): Pr
     // Read the script file
     const scriptContent = readFileSync(actualPath, 'utf8');
     
-    // Create a temporary file for our JXA wrapper script
-    const tempFile = join(tmpdir(), `jxa_wrapper_${Date.now()}.js`);
+    // Create a temporary file for our JXA wrapper script with cryptographically secure name
+    const tempFile = getSecureTempFilePath('jxa_wrapper', '.js');
     
     // Escape the script content properly for use in JXA
     const escapedScript = scriptContent.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');

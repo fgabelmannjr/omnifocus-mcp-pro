@@ -1,9 +1,8 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFileSync, unlinkSync } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
 import { generateDateAssignmentV2 } from '../../utils/dateFormatting.js';
+import { getSecureTempFilePath } from '../../utils/secureTempFile.js';
 const execAsync = promisify(exec);
 
 // Status options for tasks and projects
@@ -443,8 +442,8 @@ export async function editItem(params: EditItemParams): Promise<{
     const scriptPreview = script.split('\n').slice(0, 10).join('\n') + '\n...';
     console.error("AppleScript preview:\n", scriptPreview);
     
-    // Write script to temporary file to avoid shell escaping issues
-    tempFile = join(tmpdir(), `edit_omnifocus_${Date.now()}.applescript`);
+    // Write script to temporary file with cryptographically secure name
+    tempFile = getSecureTempFilePath('edit_omnifocus', '.applescript');
     writeFileSync(tempFile, script);
     
     // Execute AppleScript from file

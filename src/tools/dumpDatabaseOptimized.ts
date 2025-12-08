@@ -2,6 +2,7 @@ import { OmnifocusDatabase } from '../types.js';
 import { executeOmniFocusScript } from '../utils/scriptExecution.js';
 import { getCacheManager } from '../utils/cacheManager.js';
 import { dumpDatabase as originalDumpDatabase } from './dumpDatabase.js';
+import { getSecureTempFilePathDirect } from '../utils/secureTempFile.js';
 
 /**
  * Optimized version of dumpDatabase that uses caching
@@ -115,9 +116,9 @@ export async function getDatabaseStats(): Promise<{
     })();
   `;
   
-  // Write script to temp file and execute
+  // Write script to temp file with cryptographically secure name and execute
   const fs = await import('fs');
-  const tempFile = `/tmp/omnifocus_stats_${Date.now()}.js`;
+  const tempFile = getSecureTempFilePathDirect('omnifocus_stats', '.js');
   fs.writeFileSync(tempFile, script);
   
   const result = await executeOmniFocusScript(tempFile);
@@ -215,9 +216,9 @@ export async function getChangesSince(since: Date): Promise<{
     })();
   `;
   
-  // Write script to temp file and execute
+  // Write script to temp file with cryptographically secure name and execute
   const fs = await import('fs');
-  const tempFile = `/tmp/omnifocus_changes_${Date.now()}.js`;
+  const tempFile = getSecureTempFilePathDirect('omnifocus_changes', '.js');
   fs.writeFileSync(tempFile, script);
   
   const result = await executeOmniFocusScript(tempFile);

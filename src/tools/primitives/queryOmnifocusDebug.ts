@@ -1,4 +1,5 @@
 import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
+import { getSecureTempFilePathDirect } from '../../utils/secureTempFile.js';
 
 /**
  * Debug version of queryOmnifocus that returns raw field information
@@ -127,9 +128,9 @@ export async function queryOmnifocusDebug(entity: 'task' | 'project' | 'folder')
     })();
   `;
   
-  // Write script to temp file and execute
+  // Write script to temp file with cryptographically secure name and execute
   const fs = await import('fs');
-  const tempFile = `/tmp/omnifocus_debug_${Date.now()}.js`;
+  const tempFile = getSecureTempFilePathDirect('omnifocus_debug', '.js');
   fs.writeFileSync(tempFile, script);
   
   const result = await executeOmniFocusScript(tempFile);
