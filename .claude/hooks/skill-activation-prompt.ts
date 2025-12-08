@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 interface HookInput {
@@ -34,6 +34,32 @@ interface MatchedSkill {
     config: SkillRule;
 }
 
+/**
+ * Finds the project root by searching upward for a .claude directory
+ * @param startPath The directory to start searching from
+ * @returns The project root directory containing .claude, or null if not found
+ */
+function findProjectRoot(startPath: string): string | null {
+    let currentPath = resolve(startPath);
+    const root = resolve('/');
+
+    while (currentPath !== root) {
+        const claudeDir = join(currentPath, '.claude');
+        if (existsSync(claudeDir)) {
+            return currentPath;
+        }
+        currentPath = dirname(currentPath);
+    }
+
+    // Check root directory as well
+    const claudeDir = join(root, '.claude');
+    if (existsSync(claudeDir)) {
+        return root;
+    }
+
+    return null;
+}
+
 async function main() {
     try {
         // Read input from stdin
@@ -42,10 +68,21 @@ async function main() {
         const prompt = data.prompt.toLowerCase();
 
         // Load skill rules
-        // CLAUDE_PROJECT_DIR is set by Claude Code; fallback calculates from script location
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = dirname(__filename);
-        const projectDir = process.env.CLAUDE_PROJECT_DIR || join(__dirname, '..', '..');
+        // CLAUDE_PROJECT_DIR is set by Claude Code; fallback searches upward for .claude directory
+        let projectDir = process.env.CLAUDE_PROJECT_DIR;
+        
+        if (!projectDir) {
+            const __filename = fileURLToPath(import.meta.url);
+            const __dirname = dirname(__filename);
+            const foundProjectDir = findProjectRoot(__dirname);
+            
+            if (!foundProjectDir) {
+                throw new Error('Could not find project root. No .claude directory found in any parent directory.');
+            }
+            
+            projectDir = foundProjectDir;
+        }
+        
         const rulesPath = join(projectDir, '.claude', 'skills', 'skill-rules.json');
         const rules: SkillRules = JSON.parse(readFileSync(rulesPath, 'utf-8'));
 
