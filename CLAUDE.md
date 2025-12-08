@@ -98,6 +98,110 @@ When developing this MCP server, use these tools effectively:
 - **Serena** - Navigate large refactorings with semantic code understanding
 - **Web Search** - Debug obscure JXA errors, find OmniGroup forum discussions
 
+### Serena MCP Tools - Detailed Guide
+
+Serena provides semantic code understanding tools that are essential for efficient codebase navigation and manipulation. **Use Serena tools instead of reading entire files whenever possible.**
+
+#### Memory Tools (CRITICAL for Long Conversations)
+
+**IMPORTANT**: As context window approaches compaction, actively use memory tools to preserve critical information.
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `list_memories` | List all available memory files | At conversation start to see what context exists |
+| `read_memory` | Read a specific memory file | When memory name suggests relevance to current task |
+| `write_memory` | Save information for future sessions | After discovering important patterns, completing analysis, or before context compaction |
+| `edit_memory` | Update existing memory content | When information needs correction or augmentation |
+| `delete_memory` | Remove outdated memory | Only when user explicitly requests |
+
+**Available Project Memories:**
+
+- `codebase_structure` - Directory layout and file organization
+- `project_overview` - High-level architecture and purpose
+- `key_implementation_details` - Critical implementation patterns and gotchas
+- `suggested_commands` - Common development commands
+- `code_style_conventions` - Coding standards and patterns
+- `task_completion_checklist` - Steps to verify work is complete
+
+**Memory Best Practices:**
+
+1. **Read relevant memories early** - Check `list_memories` at conversation start
+2. **Write before compaction** - If working on complex task and context is large, save findings to memory
+3. **Be specific in memory names** - Use descriptive names like `authentication_flow` not `notes`
+4. **Update memories when patterns change** - Use `edit_memory` to keep information current
+5. **Never read same memory twice** - Serena tracks what you've read in the conversation
+
+#### Code Navigation Tools
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `get_symbols_overview` | High-level view of file symbols | First step when exploring a new file |
+| `find_symbol` | Find symbols by name pattern | When you know symbol name but not location |
+| `find_referencing_symbols` | Find all references to a symbol | Before modifying a symbol to understand impact |
+| `list_dir` | List directory contents | Understanding project structure |
+| `find_file` | Find files by name pattern | Locating specific files |
+| `search_for_pattern` | Regex search across codebase | Finding arbitrary patterns, non-code files |
+
+**Navigation Best Practices:**
+
+1. **Use `get_symbols_overview` before reading files** - Understand structure first
+2. **Use `find_symbol` with `include_body=False` first** - Get locations before reading bodies
+3. **Use `depth` parameter wisely** - `depth=1` gets immediate children (e.g., class methods)
+4. **Prefer symbolic tools over `search_for_pattern`** - Faster and more accurate for code
+
+#### Code Editing Tools
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `replace_symbol_body` | Replace entire symbol definition | Rewriting functions, methods, classes |
+| `insert_after_symbol` | Insert code after a symbol | Adding new methods, functions |
+| `insert_before_symbol` | Insert code before a symbol | Adding imports, new symbols at file start |
+| `rename_symbol` | Rename symbol across codebase | Refactoring names consistently |
+
+**Editing Best Practices:**
+
+1. **Always call `think_about_task_adherence` before editing** - Required by Serena
+2. **Use `find_referencing_symbols` before modifying** - Understand impact
+3. **Prefer symbolic editing over file-based** - More precise, less error-prone
+4. **Don't use symbolic editing for partial changes** - Use file-based editing for small inline changes
+
+#### Thinking Tools (Required Checkpoints)
+
+| Tool | When to Call |
+|------|--------------|
+| `think_about_collected_information` | After completing a search/exploration sequence |
+| `think_about_task_adherence` | Before any code insertion, replacement, or deletion |
+| `think_about_whether_you_are_done` | When you believe the task is complete |
+
+#### Example Workflows
+
+**Exploring a new tool implementation:**
+
+```text
+1. read_memory("codebase_structure") - understand layout
+2. get_symbols_overview("src/tools/definitions/toolName.ts") - see structure
+3. find_symbol("toolName", include_body=True) - read the definition
+4. find_symbol("toolNamePrimitive", include_body=True) - read the primitive
+5. think_about_collected_information() - verify you have enough context
+```
+
+**Modifying a function:**
+
+```text
+1. find_symbol("functionName", include_body=True) - read current implementation
+2. find_referencing_symbols("functionName") - check all usages
+3. think_about_task_adherence() - verify this is the right change
+4. replace_symbol_body("functionName", newBody) - make the change
+5. think_about_whether_you_are_done() - verify completion
+```
+
+**Preserving context before compaction:**
+
+```text
+1. write_memory("current_task_progress", "Summary of what's been done and what remains...")
+2. write_memory("discovered_patterns", "Key patterns found during investigation...")
+```
+
 ## Project Overview
 
 OmniFocus MCP Server is a Model Context Protocol (MCP) server that bridges AI assistants with OmniFocus task management. It uses JXA (JavaScript for Automation) via AppleScript to interact with OmniFocus on macOS.
@@ -303,4 +407,5 @@ The `cli.cjs` wrapper handles npm invocation and starts the built server.
 | Perspective state | OmniJS can't switch perspectives programmatically | Document limitation in tool description |
 | Batch partial failures | One invalid item doesn't fail the whole batch | Always check individual result statuses |
 | Empty JXA results | JXA errors often produce empty output, not errors | Wrap everything in try-catch with JSON returns |
-| SDK version pinned to 1.8.0 | Newer SDK versions cause TypeScript compilation hangs (issue #494) | Keep exact version `1.8.0` in package.json. DNS rebinding CVE doesn't affect stdio transport. |
+| SDK type arguments | `RequestHandlerExtra` requires 2 type params in SDK 1.15.x+ | Use `RequestHandlerExtra<ServerRequest, ServerNotification>` in all handler signatures |
+| Module resolution | Legacy `"moduleResolution": "node"` causes infinite type recursion | Use `"moduleResolution": "NodeNext"` and `"module": "NodeNext"` in tsconfig.json |

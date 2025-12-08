@@ -14,8 +14,8 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.8.0",
-    "zod": "^3.22.4"
+    "@modelcontextprotocol/sdk": "1.24.3",
+    "zod": "^4.1.0"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -46,8 +46,5 @@
     "power-tools",
     "ai"
   ],
-  "license": "MIT",
-  "overrides": {
-    "zod": "^3.22.4"
-  }
+  "license": "MIT"
 }
