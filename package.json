@@ -14,14 +14,14 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.8.0",
+    "@modelcontextprotocol/sdk": "1.8.0",
     "zod": "^3.22.4"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
+    "@types/node": "^20.11.19",
     "typescript": "^5.3.3"
   },
   "repository": {
@@ -46,5 +46,8 @@
     "power-tools",
     "ai"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "zod": "^3.22.4"
+  }
 }

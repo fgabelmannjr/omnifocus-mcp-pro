@@ -303,3 +303,4 @@ The `cli.cjs` wrapper handles npm invocation and starts the built server.
 | Perspective state | OmniJS can't switch perspectives programmatically | Document limitation in tool description |
 | Batch partial failures | One invalid item doesn't fail the whole batch | Always check individual result statuses |
 | Empty JXA results | JXA errors often produce empty output, not errors | Wrap everything in try-catch with JSON returns |
+| SDK version pinned to 1.8.0 | Newer SDK versions cause TypeScript compilation hangs (issue #494) | Keep exact version `1.8.0` in package.json. DNS rebinding CVE doesn't affect stdio transport. |
