@@ -2,6 +2,102 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development Philosophy
+
+### Core Principles
+
+- **Learn before changing** - Read existing implementations before modifying. Find similar tools and follow their patterns.
+- **Incremental progress over big bangs** - Small changes that compile and pass. Commit working code frequently.
+- **JXA is fragile** - Syntax errors fail silently. Test scripts in isolation before integrating.
+- **Type safety prevents runtime surprises** - Trust TypeScript. If it compiles, you're halfway there.
+- **Explicit over implicit** - Clear data flow, obvious dependencies, boring solutions.
+
+### Simplicity
+
+- **Single responsibility** - One function does one thing. One tool solves one problem.
+- **Avoid premature abstractions** - Don't create utilities for one-time operations.
+- **No clever tricks** - Choose the boring, obvious solution every time.
+- **If you need to explain it, it's too complex** - Refactor until the code is self-documenting.
+
+### JXA-Specific Mindset
+
+JXA (JavaScript for Automation) is the critical path for all OmniFocus interactions. Approach it with caution:
+
+- **Silent failures are the norm** - JXA errors often produce empty results, not error messages
+- **Test in Script Editor first** - Never trust JXA until you've run it manually
+- **String building is error-prone** - Template literals inside generated JXA need careful escaping
+- **OmniFocus has its own object model** - Learn `.tasks.whose()` syntax; it's not SQL
+
+### When to Ask vs. Proceed
+
+**Stop and ask** when:
+
+- Unsure which architectural pattern to follow
+- A change would affect multiple tools
+- Adding a new dependency
+- Modifying JXA script execution logic
+- After 3 failed attempts at the same problem
+
+**Proceed confidently** when:
+
+- Following an existing tool's implementation pattern
+- The change is isolated to one primitive
+- Build and type checks pass
+- You've tested JXA scripts independently
+
+## Important Reminders
+
+### NEVER
+
+- Use `--no-verify` to bypass commit hooks
+- Skip the build step - server runs from `dist/`, not `src/`
+- Test JXA only through the MCP server - always test in Script Editor first
+- Disable TypeScript strict mode or ignore type errors
+- Add new tools without the definitions/primitives separation
+- Silently swallow exceptions in JXA - always use try-catch with JSON error returns
+- Assume dates are UTC - OmniFocus interprets local time
+- Make changes without reading similar existing implementations first
+- Introduce new tools/dependencies without strong justification
+- Disable tests instead of fixing them
+
+### ALWAYS
+
+- Run `npm run build` after any source changes
+- Verify JXA scripts are copied to `dist/utils/omnifocusScripts/`
+- Use Zod schemas for all tool input validation
+- Return structured JSON from JXA scripts (never raw strings)
+- Handle partial failures in batch operations
+- Include context in error messages for debugging
+- Follow existing patterns - find a similar tool and mirror its structure
+- Commit working code incrementally
+- Update documentation (CLAUDE.md, README) when adding new tools
+- End all text files with a newline
+
+## Project Integration
+
+### Tooling Discipline
+
+- Use the project's existing build system (`npm run build`)
+- Use the project's existing linter settings (ESLint, TypeScript strict mode)
+- Don't introduce new dependencies without strong justification
+- If a utility exists in the codebase, use it; don't create a new one
+
+### Code Style
+
+- Follow existing conventions in the project
+- Refer to `.eslintrc`, `tsconfig.json`, and `.editorconfig` if present
+- Text files should always end with an empty line
+- Use consistent naming: camelCase for functions, PascalCase for types
+
+## MCP Tool Usage (For Development)
+
+When developing this MCP server, use these tools effectively:
+
+- **Context7** - Validate current MCP SDK documentation, check for API changes
+- **Tavily** - Research JXA patterns, OmniFocus automation techniques, AppleScript/JXA conversion
+- **Serena** - Navigate large refactorings with semantic code understanding
+- **Web Search** - Debug obscure JXA errors, find OmniGroup forum discussions
+
 ## Project Overview
 
 OmniFocus MCP Server is a Model Context Protocol (MCP) server that bridges AI assistants with OmniFocus task management. It uses JXA (JavaScript for Automation) via AppleScript to interact with OmniFocus on macOS.
@@ -20,6 +116,7 @@ npm run dev
 ```
 
 The build process:
+
 1. Compiles TypeScript from `src/` to `dist/`
 2. Copies JXA scripts from `src/utils/omnifocusScripts/*.js` to `dist/utils/omnifocusScripts/`
 3. Makes `dist/server.js` executable
@@ -28,22 +125,26 @@ The build process:
 
 ### Core Components
 
-**MCP Server** (`src/server.ts`)
+#### MCP Server (`src/server.ts`)
+
 - Entry point that registers all tools with the MCP SDK
 - Uses `StdioServerTransport` for stdio-based communication
 - Each tool is registered with its schema and handler
 
-**Tool Organization**
+#### Tool Organization
+
 - `src/tools/definitions/`: Tool schemas and MCP-facing handlers (defines tool interface)
 - `src/tools/primitives/`: Core business logic for each tool (actual implementation)
 - Separation allows clean MCP registration while keeping logic testable
 
-**Script Execution** (`src/utils/scriptExecution.ts`)
+#### Script Execution (`src/utils/scriptExecution.ts`)
+
 - `executeJXA()`: Writes JXA scripts to temp files and executes via `osascript -l JavaScript`
 - All OmniFocus interactions go through JXA, not direct AppleScript
 - Returns parsed JSON results
 
-**Pre-built JXA Scripts** (`src/utils/omnifocusScripts/*.js`)
+#### Pre-built JXA Scripts (`src/utils/omnifocusScripts/*.js`)
+
 - `omnifocusDump.js`: Full database dump (used by `dump_database`)
 - `listPerspectives.js`: Lists all perspectives
 - `getPerspectiveView.js`: Gets items in current perspective view
@@ -51,42 +152,49 @@ The build process:
 
 ### Key Architectural Patterns
 
-**Query vs Dump Strategy**
+#### Query vs Dump Strategy
+
 - `query_omnifocus`: Generates JXA dynamically for targeted queries with filters
 - `dump_database`: Uses pre-built `omnifocusDump.js` for full database export
 - Query is faster for specific lookups; dump is better for comprehensive analysis
 
-**Batch Operations**
+#### Batch Operations
+
 - `batchAddItems`: Processes items in dependency order using topological sort
 - Detects cycles in `tempId` → `parentTempId` references
 - Maps temporary IDs to real OmniFocus IDs for within-batch parent-child relationships
 - Supports `hierarchyLevel` for ordering hints
 
-**Hierarchy Management**
+#### Hierarchy Management
+
 - Tasks can reference parents via `parentTaskId` (existing ID) or `parentTaskName` (name lookup)
 - Batch operations support `parentTempId` to reference items being created in same batch
 - Cycle detection prevents infinite loops in parent-child relationships
 
-**Type System** (`src/omnifocustypes.ts`)
+#### Type System (`src/omnifocustypes.ts`)
+
 - Defines TypeScript enums matching OmniFocus object model (Task.Status, Project.Status, etc.)
 - Minimal interfaces for core objects (TaskMinimal, ProjectMinimal, FolderMinimal, TagMinimal)
 - Used for type safety when building JXA queries and parsing results
 
 ### Tool Categories
 
-**Query Tools**
+#### Query Tools
+
 - `query_omnifocus`: Targeted queries with filters, sorting, field selection
 - `dump_database`: Full database export (warning: can timeout on large databases)
 - `list_perspectives`: List available perspectives
 - `get_perspective_view`: Get items in a perspective (requires perspective to be open)
 
-**Single Item Operations**
+#### Single Item Operations
+
 - `add_omnifocus_task`: Create one task
 - `add_project`: Create one project
 - `edit_item`: Modify task or project by ID or name
 - `remove_item`: Delete task or project by ID or name
 
-**Batch Operations**
+#### Batch Tools
+
 - `batch_add_items`: Create multiple tasks/projects with hierarchy support
 - `batch_remove_items`: Delete multiple items at once
 
@@ -95,10 +203,31 @@ The build process:
 ### JXA Script Generation
 
 When modifying query logic, the JXA is built as a string in `src/tools/primitives/queryOmnifocus.ts`. Key considerations:
+
 - Use template literals carefully (backticks inside JXA need escaping)
 - OmniFocus object model uses methods like `.tasks.whose()`, not SQL
 - Date comparisons in JXA use `.getTime()` for milliseconds since epoch
 - Always wrap JXA in try-catch and return JSON
+
+### Error Handling Standards
+
+All JXA scripts must follow this pattern:
+
+```javascript
+try {
+    // ... JXA logic ...
+    JSON.stringify({ success: true, data: result });
+} catch (e) {
+    JSON.stringify({ success: false, error: e.message || String(e) });
+}
+```
+
+For MCP tool handlers:
+
+- Validate all inputs with Zod schemas before processing
+- Return structured errors with actionable messages
+- Never let exceptions bubble up unhandled
+- Include enough context for debugging (item IDs, operation type, etc.)
 
 ### Date Handling
 
@@ -114,6 +243,7 @@ When modifying query logic, the JXA is built as a string in `src/tools/primitive
 ### Database Size Issues
 
 The `dump_database` tool can timeout on very large OmniFocus databases. For large databases:
+
 - Use `query_omnifocus` with filters instead
 - Enable `hideCompleted` and `hideRecurringDuplicates` options
 - Consider pagination if implementing future enhancements
@@ -121,6 +251,7 @@ The `dump_database` tool can timeout on very large OmniFocus databases. For larg
 ### Batch Operation Ordering
 
 When using `batch_add_items`:
+
 1. Items with cycles in `tempId` references fail immediately
 2. Items with unknown `parentTempId` (not in batch, not real ID) fail immediately
 3. Remaining items sorted by dependency (parents before children)
@@ -130,6 +261,7 @@ When using `batch_add_items`:
 ### Task Hierarchy Best Practices
 
 When creating nested tasks:
+
 - Use `tempId` and `parentTempId` for within-batch hierarchy
 - Use `hierarchyLevel` to provide ordering hints (0 for root, 1 for child, etc.)
 - Validate that parent references exist before batch submission
@@ -138,6 +270,7 @@ When creating nested tasks:
 ## Testing Approach
 
 Currently no automated tests. When adding tests:
+
 - Mock `executeJXA()` to avoid requiring OmniFocus installation
 - Test JXA string generation separately from execution
 - Validate cycle detection in batch operations
@@ -146,6 +279,7 @@ Currently no automated tests. When adding tests:
 ## Claude Desktop Integration
 
 The server is installed via npm and invoked with:
+
 ```json
 {
   "mcpServers": {
@@ -161,8 +295,11 @@ The `cli.cjs` wrapper handles npm invocation and starts the built server.
 
 ## Common Gotchas
 
-1. **Build before test**: Always `npm run build` after changes - the server runs from `dist/`, not `src/`
-2. **JXA syntax errors**: Missing quotes or improper escaping in generated JXA causes silent failures
-3. **Date timezones**: Be explicit with ISO 8601 format; OmniFocus interprets local time
-4. **Perspective state**: `get_perspective_view` reflects current UI state, not a named perspective lookup
-5. **Batch failures**: One invalid item doesn't fail the batch - check individual result statuses
+| Gotcha | Why It Happens | How to Avoid |
+|--------|----------------|--------------|
+| Build before test | Server runs from `dist/`, not `src/` | Use `npm run dev` for watch mode |
+| JXA syntax errors | Missing quotes or escaping causes silent failures | Test in Script Editor first |
+| Date timezones | OmniFocus interprets local time | Always use explicit ISO 8601 format |
+| Perspective state | OmniJS can't switch perspectives programmatically | Document limitation in tool description |
+| Batch partial failures | One invalid item doesn't fail the whole batch | Always check individual result statuses |
+| Empty JXA results | JXA errors often produce empty output, not errors | Wrap everything in try-catch with JSON returns |
