@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync, existsSync } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { join, dirname, resolve, parse } from 'path';
 import { fileURLToPath } from 'url';
 
 interface HookInput {
@@ -41,7 +41,7 @@ interface MatchedSkill {
  */
 function findProjectRoot(startPath: string): string | null {
     let currentPath = resolve(startPath);
-    const root = resolve('/');
+    const root = parse(currentPath).root;
 
     while (currentPath !== root) {
         const claudeDir = join(currentPath, '.claude');
