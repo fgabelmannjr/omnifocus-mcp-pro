@@ -13,7 +13,7 @@ Changes in this revision:
   - FIXED: moduleResolution rationale (Zod conflicts are primary cause)
   - ADDED: Node.js version requirement (>=24.0.0)
   - ADDED: ES Module requirements (.js extensions)
-  - ADDED: TypeScript 5.7+ requirement for ES2024 target
+  - UPDATED: TypeScript 5.9+ requirement for ES2024 target (was 5.7+)
   - ADDED: Zod 4 breaking changes note
   - ADDED: Two execution functions documentation
   - ADDED: evaluateJavascript method name note (lowercase 's')
@@ -300,7 +300,7 @@ TypeScript SDK and proper integration with MCP clients.
 - ES modules are used (`"type": "module"` in package.json)
 - All local imports MUST include `.js` extension (mandatory per Node.js ESM
   specification)
-- TypeScript 5.7+ is required for ES2024 target support
+- TypeScript 5.9+ is required (`"typescript": "^5.9.3"` in package.json)
 - TypeScript target is ES2024 with strict mode enabled
 
 ## Script Execution Architecture
