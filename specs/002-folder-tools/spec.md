@@ -15,7 +15,7 @@ folder operations
   all matching folder IDs
 - Q: How should position be specified in the tool input schema? → A: Relative
   object structure `{ placement: "before"|"after"|"beginning"|"ending",
-  relativeTo?: string }` - maps directly to OmniAutomation's
+  relativeTo?: string }` - maps directly to Omni Automation's
   `Folder.ChildInsertionLocation` API. Note: Updated from `siblingId` to
   `relativeTo` per clarification #26 for consistency with `move_folder`
 - Q: When deleting a folder, what happens to its contents?
@@ -24,16 +24,16 @@ folder operations
   behavior. Note: `force` parameter removed per clarification #22 - all
   deletions are immediate and recursive like native OmniFocus.
 - Q: Should folder name matching be case-sensitive? → A: Yes, case-sensitive
-  (exact match). This matches OmniAutomation's `byName()` behavior where
+  (exact match). This matches Omni Automation's `byName()` behavior where
   "Work" ≠ "work".
 - Q: What information should be returned on successful folder operations?
   → A: Folder details - `{ success: true, id: string, name: string }`.
-  Matches OmniAutomation's DatabaseObject.id pattern. Note: Updated from
+  Matches Omni Automation's DatabaseObject.id pattern. Note: Updated from
   `folderId` per clarification #24 for API consistency.
 - Q: What exact fields should `list_folders` return for each folder? → A: Full
   schema `{ id: string, name: string, status: 'active'|'dropped', parentId:
   string|null }`. Root folders have `parentId: null`. Verified against
-  OmniAutomation Folder class properties (omni-automation.com/omnifocus/folder.html).
+  Omni Automation Folder class properties (omni-automation.com/omnifocus/folder.html).
   Note: Folder class does NOT expose creationDate/modificationDate.
 - Q: When changing folder status to "dropped", should children automatically
   cascade to dropped? → A: No cascade - mirror OmniFocus native behavior. Each
@@ -43,12 +43,12 @@ folder operations
   own status. UI shows "inherited dropped" visual but data is not modified.
 - Q: How should root level be specified in create/move input schema? → A: Both
   omitting `parentId` and setting `parentId: null` mean root level (equivalent).
-  This mirrors OmniAutomation's `new Folder(name, position)` where `null` or
+  This mirrors Omni Automation's `new Folder(name, position)` where `null` or
   omitting position creates at library root. For explicit positioning at root,
   use position `{ placement: "beginning"|"ending" }` without `parentId`.
 - Q: What is the standard error response format? → A: Use `{ success: false,
   error: string }` matching existing MCP tool patterns (e.g., `query_omnifocus`,
-  `edit_item`). Note: OmniAutomation internally uses `{ name, message }` for
+  `edit_item`). Note: Omni Automation internally uses `{ name, message }` for
   thrown errors, but MCP layer converts to simple error string for clients.
 - Q: When moving a folder into a dropped parent, what happens to the moved
   folder's status? → A: Preserve status - moved folder keeps its original
@@ -61,26 +61,26 @@ folder operations
   sibling in target parent". This follows fail-fast principles and provides
   clear debugging information. Note: Updated from `siblingId` per clarification #26.
 - Q: Can duplicate folder names be created within the same parent? → A: Yes,
-  allow duplicates - mirror OmniFocus native behavior. OmniAutomation's
+  allow duplicates - mirror OmniFocus native behavior. Omni Automation's
   `new Folder(name, position)` imposes no uniqueness constraint. The
   `byName()` method returns "the first folder identified by name", confirming
   multiple can exist. Disambiguation for lookups is already handled via
   clarification #1 (fail with error listing all matching IDs).
 - Q: Can `edit_folder` change a folder's parent, or is that exclusively
   for `move_folder`? → A: No - parent changes are exclusively handled by
-  `move_folder`. OmniAutomation's Folder class has `parent` as read-only
+  `move_folder`. Omni Automation's Folder class has `parent` as read-only
   property; changing hierarchy requires `moveSections()` function. Clean
   separation: `edit_folder` handles properties (name, status), `move_folder`
   handles hierarchy (parent, position).
 - Q: What are the input parameter names for `list_folders`? → A: Use
   `{ status?: 'active'|'dropped', parentId?: string, includeChildren?: boolean }`.
-  Names align with OmniAutomation Folder class properties: `status` matches
+  Names align with Omni Automation Folder class properties: `status` matches
   `folder.status`, `parentId` references `folder.parent` (using ID for API),
   `includeChildren` controls `folders` (immediate) vs `flattenedFolders`
   (recursive) retrieval.
 - Q: What parameter names should identify folders in edit/delete/move tools?
   → A: Use `{ id?: string, name?: string }` matching existing removeItem/editItem
-  patterns. Aligns with OmniAutomation's two lookup methods: `Folder.byIdentifier(id)`
+  patterns. Aligns with Omni Automation's two lookup methods: `Folder.byIdentifier(id)`
   and `flattenedFolders.byName(name)`. Convention: `id` takes precedence when
   both provided; `name` is fallback. If `name` matches multiple folders, fail
   with disambiguation error per clarification #1.
@@ -88,7 +88,7 @@ folder operations
   are omitted? → A: Return flat list of ALL folders using `database.flattenedFolders`,
   sorted by database order. Each folder includes `parentId` field (null for root)
   enabling client-side hierarchy reconstruction. This is the most common use case
-  giving a complete organizational picture. Verified against OmniAutomation:
+  giving a complete organizational picture. Verified against Omni Automation:
   `flattenedFolders` returns "a flat array of all folders in the database".
 - Q: What are the folder name validation rules? → A: Follow existing codebase
   patterns: (1) Trim leading/trailing whitespace before validation, (2) Reject
@@ -99,7 +99,7 @@ folder operations
   error "Folder name is required and must be a non-empty string".
 - Q: What response schema should edit/delete/move folder operations return?
   → A: All mutable operations return consistent `{ success: true, id: string,
-  name: string }` on success. This aligns with FR-011a and OmniAutomation's
+  name: string }` on success. This aligns with FR-011a and Omni Automation's
   DatabaseObject.id pattern. For delete: capture ID/name before calling
   `delete`. For edit/move: folder object remains accessible after operation,
   read `folder.id.primaryKey` and `folder.name`. Note: Updated from `folderId`
@@ -107,7 +107,7 @@ folder operations
 - Q: What happens when `parentId` references a non-existent folder? → A: Fail
   with error "Invalid parentId 'xyz': folder not found". Applies to add_folder
   (when specifying parent) and list_folders (when filtering by parent). Verified
-  against OmniAutomation: `Folder.byIdentifier(id)` returns `null` if no such
+  against Omni Automation: `Folder.byIdentifier(id)` returns `null` if no such
   folder exists - MCP layer converts null to actionable error. Matches siblingId
   error pattern from clarification #11 and fail-fast principles.
 - Q: What naming convention should the folder tools use? → A: Match existing
@@ -115,7 +115,7 @@ folder operations
   `move_folder`. This aligns with `add_omnifocus_task`, `add_project`, `remove_item`,
   `edit_item` conventions. Ensures consistent API surface and reduces cognitive
   load for users familiar with existing tools.
-- Q: Should folder tools use JXA/OmniAutomation or AppleScript for OmniFocus
+- Q: Should folder tools use JXA/Omni Automation or AppleScript for OmniFocus
   interaction? → A: Use **Omni Automation JavaScript** - the officially recommended
   approach per Omni Group documentation. AppleScript and JXA are listed as
   "Extended Automation" (legacy/supplementary). Omni Automation offers:
@@ -132,7 +132,7 @@ folder operations
   ```
 
   This maintains the existing Node.js → osascript bridge while accessing the
-  full Omni Automation API. The spec's OmniAutomation API references now describe
+  full Omni Automation API. The spec's Omni Automation API references now describe
   the *actual* implementation methods (e.g., `new Folder()`, `deleteObject()`,
   `moveSections()`).
 
@@ -148,19 +148,19 @@ folder operations
 - Q: Should `edit_folder` use partial or full update semantics? → A: Partial
   updates - only provided fields are modified; omitted fields remain unchanged.
   At least one of `name` or `status` must be provided. Verified against
-  OmniAutomation: Folder properties (`name`, `status`) support individual
+  Omni Automation: Folder properties (`name`, `status`) support individual
   assignment (e.g., `folder.status = Folder.Status.Dropped` without touching
   `folder.name`). Also matches existing `editItem.ts` pattern where all update
   fields are optional (`newName?`, `newStatus?`, etc.).
 - Q: Should folder tool responses use `folderId` or `id` for the identifier
-  field? → A: Use `id` to match OmniAutomation's DatabaseObject class where all
+  field? → A: Use `id` to match Omni Automation's DatabaseObject class where all
   objects (folders, projects, tasks, tags) share a common `id` property
   (specifically `object.id.primaryKey`). Response schema: `{ success: true,
   id: string, name: string }`. Note: Existing files needing refactoring for API
   consistency: `addProject.ts` uses `projectId`, `addOmniFocusTask.ts` uses
   `taskId`. Files already correct: `removeItem.ts` and `editItem.ts` use `id`.
 - Q: What is the complete input schema for `move_folder`? → A: Use a unified
-  position system matching OmniAutomation's `moveSections(sections, position)`
+  position system matching Omni Automation's `moveSections(sections, position)`
   API where position is `Folder | Folder.ChildInsertionLocation`. Schema:
   `{ id?: string, name?: string, position: { placement: "before" | "after" |
   "beginning" | "ending", relativeTo?: string } }`. The `relativeTo` field
@@ -170,14 +170,14 @@ folder operations
   maps directly to: `library.beginning`, `folder.ending`, `sibling.after`, etc.
   Note: `position` is required for move operations (no sensible default).
 - Q: What naming convention should be used for ID fields (primary vs foreign
-  keys)? → A: Follow OmniAutomation patterns: use `id` for primary keys (the
+  keys)? → A: Follow Omni Automation patterns: use `id` for primary keys (the
   object's own identifier, from `DatabaseObject.id.primaryKey`) and descriptive
   names with `Id` suffix (lowercase d) for foreign keys that reference other
   objects. Foreign key naming: `parentId` (references parent folder), `relativeTo`
   (references related folder in position operations - parent for
   beginning/ending, sibling for before/after). Note: Both `add_folder` and
   `move_folder` position schemas should use `relativeTo` for consistency
-  (see FR-010 and FR-023). This aligns with OmniAutomation where relationships
+  (see FR-010 and FR-023). This aligns with Omni Automation where relationships
   are object references (e.g., `folder.parent` returns Folder object) but MCP
   serializes these as ID strings. Codebase note: `types.ts` has inconsistent
   casing - some use `Id` (e.g., `parentId`, `projectId`, `folderId`) while
@@ -189,7 +189,7 @@ folder operations
   contradiction is resolved by removing the edge case from the spec.
 - Q: What does "implied root container" mean and what error should be returned
   when attempting to delete/move it? → A: The "implied root container" refers to
-  the `Library` object (`database.library`). Per OmniAutomation API, `Library` is
+  the `Library` object (`database.library`). Per Omni Automation API, `Library` is
   a special container class (like `Inbox` and `Tags`) - NOT a `DatabaseObject`.
   The `deleteObject()` function requires a `DatabaseObject` parameter; `Library`
   cannot be passed to it. MCP layer should validate inputs and return error:
@@ -197,7 +197,7 @@ folder operations
   validation error, not a semantic operation error. The edge case text should
   be updated to use this specific error message.
 - Q: Why is `position` optional for `add_folder` but required for `move_folder`?
-  → A: This asymmetry is intentional and mirrors the native OmniAutomation API.
+  → A: This asymmetry is intentional and mirrors the native Omni Automation API.
   Per official docs: `new Folder(name, position)` accepts `position: Folder |
   Folder.ChildInsertionLocation | null` - null/omitted means default placement.
   However, `moveSections(sections, position)` requires `position: Folder |
@@ -205,7 +205,7 @@ folder operations
   The spec correctly reflects this API design: FR-010 (add_folder) defaults to
   "ending", FR-023 (move_folder) requires position with no default.
 - Q: How should `includeChildren` behave when `parentId` is omitted? → A: Per
-  OmniAutomation API, use `database.folders` vs `database.flattenedFolders`
+  Omni Automation API, use `database.folders` vs `database.flattenedFolders`
   distinction. When `parentId` is omitted: `includeChildren: false` returns
   top-level folders only (via `database.folders`), `includeChildren: true`
   returns all folders recursively (via `database.flattenedFolders`). This makes
@@ -216,14 +216,14 @@ folder operations
 - Q: What field names should `edit_folder` use to distinguish identification
   from update values? → A: Follow existing `editItem.ts` pattern: use `id` and
   `name` for identification (to find the folder), use `newName` and `newStatus`
-  for update values (to modify). This matches OmniAutomation where `folder.name`
+  for update values (to modify). This matches Omni Automation where `folder.name`
   and `folder.status` are the writable properties, while MCP layer uses `new*`
   prefix to avoid ambiguity. Input schema: `{ id?: string, name?: string,
   newName?: string, newStatus?: 'active'|'dropped' }`. At least one identifier
   (id or name) required; at least one update field (newName or newStatus)
   required. FR-015a updated to reflect this pattern.
 - Q: What are the complete Omni Automation JavaScript methods for folder operations?
-  → A: Based on the official OmniAutomation API documentation
+  → A: Based on the official Omni Automation API documentation
   (omni-automation.com/omnifocus/), the complete mapping is:
 
   | Operation | Omni Automation JavaScript |
@@ -258,10 +258,10 @@ folder operations
   ```
 
 - Q: When is `relativeTo` required vs optional in the position schema? → A: Per
-  official OmniAutomation API documentation: `relativeTo` is **REQUIRED** for
+  official Omni Automation API documentation: `relativeTo` is **REQUIRED** for
   `placement: "before"|"after"` (specifies sibling folder ID), and **OPTIONAL**
   for `placement: "beginning"|"ending"` (specifies parent folder ID; omit for
-  library root). This maps directly to OmniAutomation's `Folder.ChildInsertionLocation`
+  library root). This maps directly to Omni Automation's `Folder.ChildInsertionLocation`
   properties: `sibling.before`, `sibling.after`, `parent.beginning`, `parent.ending`,
   `library.beginning`, `library.ending`. FR-010 and FR-023 updated to explicitly
   capture these requirement rules.
@@ -271,7 +271,7 @@ folder operations
   matchingIds: string[] }`. This allows agents to: (1) detect disambiguation via
   `code` field, (2) extract IDs programmatically, (3) query folder details,
   (4) present user with contextual choices, (5) retry with selected ID. Note:
-  OmniAutomation's `byName()` simply returns "the first folder" with no
+  Omni Automation's `byName()` simply returns "the first folder" with no
   disambiguation - this is an MCP layer design decision. FR-027 added.
 - Q: Should User Story 0 enumerate specific files to refactor, or should the
   planner discover them? → A: **Planner discovers** - US0 scope clause stays
@@ -585,7 +585,7 @@ restructuring.
   recursively (via `database.flattenedFolders`). Default is `true` to
   align with clarification #16 which established returning all folders as the
   common use case. Note: Updated per clarification #30 to align with
-  OmniAutomation API patterns.
+  Omni Automation API patterns.
 
 #### Add Folder
 
@@ -596,7 +596,7 @@ restructuring.
   existing folders
 - **FR-010**: System MUST support specifying position via object structure:
   `{ placement: "before"|"after"|"beginning"|"ending", relativeTo?: string }`.
-  Requirement rules per official OmniAutomation API:
+  Requirement rules per official Omni Automation API:
   - For `placement: "before"` or `"after"`: `relativeTo` is **REQUIRED** and
     specifies the sibling folder ID (maps to `sibling.before`/`sibling.after`)
   - For `placement: "beginning"` or `"ending"`: `relativeTo` is **OPTIONAL**
@@ -608,7 +608,7 @@ restructuring.
   for consistency with `move_folder` (FR-023) per clarification #26
 - **FR-011**: System MUST return the identifier of the newly created folder
 - **FR-011a**: All successful operations MUST return response structure:
-  `{ success: true, id: string, name: string }` (matches OmniAutomation's
+  `{ success: true, id: string, name: string }` (matches Omni Automation's
   DatabaseObject.id property pattern)
 
 #### Edit Folder
@@ -641,17 +641,17 @@ restructuring.
 
 - **FR-021**: System MUST support moving folders to a different parent folder
 - **FR-022**: System MUST support moving folders to the root level (no parent)
-- **FR-023**: System MUST use unified position schema matching OmniAutomation's
+- **FR-023**: System MUST use unified position schema matching Omni Automation's
   `moveSections(sections, position)` API: `{ placement: "before" | "after" |
   "beginning" | "ending", relativeTo?: string }`.
-  Requirement rules per official OmniAutomation API:
+  Requirement rules per official Omni Automation API:
   - For `placement: "before"` or `"after"`: `relativeTo` is **REQUIRED** and
     specifies the sibling folder ID (maps to `sibling.before`/`sibling.after`)
   - For `placement: "beginning"` or `"ending"`: `relativeTo` is **OPTIONAL**
     and specifies the parent folder ID (maps to `parent.beginning`/
     `parent.ending`); when omitted, defaults to library root
     (`library.beginning`/`library.ending`)
-  **Position is required** for move operations (no default) per OmniAutomation's
+  **Position is required** for move operations (no default) per Omni Automation's
   `moveSections()` signature which does not accept null.
 - **FR-024**: System MUST preserve folder contents (projects and subfolders)
   during move
