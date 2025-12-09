@@ -443,9 +443,10 @@ restructuring.
   children only (via `folder.folders`). When `parentId` is omitted:
   `includeChildren: false` returns top-level folders only (via
   `database.folders`), `includeChildren: true` returns all folders
-  recursively (via `database.flattenedFolders`). Default is `true` for
-  backwards compatibility with clarification #16. Note: Updated per
-  clarification #30 to align with OmniAutomation API patterns.
+  recursively (via `database.flattenedFolders`). Default is `true` to
+  align with clarification #16 which established returning all folders as the
+  common use case. Note: Updated per clarification #30 to align with
+  OmniAutomation API patterns.
 
 #### Add Folder
 

@@ -6,7 +6,7 @@
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs)
+- [x] Core requirements are technology-agnostic (implementation details in Clarifications section)
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed
@@ -27,7 +27,7 @@
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
 - [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] No implementation details leak into specification
+- [x] Implementation guidance consolidated in Clarifications section
 
 ## Validation Summary
 
@@ -36,8 +36,9 @@
 All checklist items have been verified:
 
 1. **Content Quality**: Specification focuses on WHAT (folder operations)
-   and WHY (organizational value) without describing HOW (no mention of
-   JXA, TypeScript, Zod schemas, etc.)
+   and WHY (organizational value). Implementation details (AppleScript commands,
+   OmniAutomation API patterns) are documented in the Clarifications section
+   to guide implementation while keeping core requirements technology-agnostic.
 
 2. **Requirement Completeness**:
    - 26 functional requirements defined across 5 tools
@@ -56,14 +57,14 @@ All checklist items have been verified:
 - No clarifications needed - all requirements are unambiguous with
   reasonable defaults applied
 - Phase 1 corresponds to Day 2 in the implementation plan
-  (5 tools: list_folders, create_folder, edit_folder, delete_folder,
+  (5 tools: list_folders, add_folder, edit_folder, remove_folder,
   move_folder)
 
 ## Research Completed
 
 - [x] OmniAutomation Folder API documentation reviewed
 - [x] OmniFocus API 3.13.1 reference reviewed
-- [x] Confirmed CRUD operations are supported via OmniAutomation/JXA
+- [x] Confirmed CRUD operations are supported via AppleScript (using OmniAutomation concepts as reference)
 - [x] Documented position system (before, after, beginning, ending)
 - [x] Verified only two folder statuses exist (Active, Dropped)
 - [x] Added clickable URL citations for all API references in spec
