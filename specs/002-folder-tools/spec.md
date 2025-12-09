@@ -126,9 +126,11 @@ folder operations
 
   **Execution pattern**: Call Omni Automation from Node.js using AppleScript's
   `evaluate javascript` command:
-  ```
+
+  ```bash
   osascript -e 'tell application "OmniFocus" to evaluate javascript "..."'
   ```
+
   This maintains the existing Node.js → osascript bridge while accessing the
   full Omni Automation API. The spec's OmniAutomation API references now describe
   the *actual* implementation methods (e.g., `new Folder()`, `deleteObject()`,
@@ -246,6 +248,7 @@ folder operations
   have 2 states, unlike projects which also have `OnHold` and `Done`).
 
   **Execution wrapper** (from Node.js):
+
   ```javascript
   const script = `
     const folder = new Folder("Test", library.ending);
@@ -253,6 +256,34 @@ folder operations
   `;
   execFile('osascript', ['-e', `tell application "OmniFocus" to evaluate javascript "${escapeForAppleScript(script)}"`]);
   ```
+
+- Q: When is `relativeTo` required vs optional in the position schema? → A: Per
+  official OmniAutomation API documentation: `relativeTo` is **REQUIRED** for
+  `placement: "before"|"after"` (specifies sibling folder ID), and **OPTIONAL**
+  for `placement: "beginning"|"ending"` (specifies parent folder ID; omit for
+  library root). This maps directly to OmniAutomation's `Folder.ChildInsertionLocation`
+  properties: `sibling.before`, `sibling.after`, `parent.beginning`, `parent.ending`,
+  `library.beginning`, `library.ending`. FR-010 and FR-023 updated to explicitly
+  capture these requirement rules.
+- Q: What error response format should disambiguation errors use? → A: Use
+  **structured response** to enable AI agents to present users with choices:
+  `{ success: false, error: string, code: "DISAMBIGUATION_REQUIRED",
+  matchingIds: string[] }`. This allows agents to: (1) detect disambiguation via
+  `code` field, (2) extract IDs programmatically, (3) query folder details,
+  (4) present user with contextual choices, (5) retry with selected ID. Note:
+  OmniAutomation's `byName()` simply returns "the first folder" with no
+  disambiguation - this is an MCP layer design decision. FR-027 added.
+- Q: Should User Story 0 enumerate specific files to refactor, or should the
+  planner discover them? → A: **Planner discovers** - US0 scope clause stays
+  as-is; the planning phase identifies which files contain AppleScript that
+  needs refactoring. This is standard practice for refactoring tasks where the
+  spec defines *what* to change (AppleScript → Omni Automation JavaScript) and
+  the plan defines *where* (specific files). No spec changes needed.
+- Q: How should transport-level failures be handled (e.g., OmniFocus not
+  running, osascript timeout, syntax errors)? → A: **Follow existing patterns**
+  in `scriptExecution.ts`. The current codebase already handles these failures;
+  folder tools should use the same error handling. No new FR needed - this is
+  an implementation detail that maintains consistency with existing tools.
 
 ## Overview
 
@@ -284,6 +315,7 @@ API alignment.
 **Why this priority**: Omni Automation JavaScript is the **officially recommended**
 approach per Omni Group documentation. AppleScript/JXA are listed as "Extended
 Automation" (legacy/supplementary). Omni Automation is:
+
 - Cross-platform (iOS, iPadOS, macOS) vs macOS-only for AppleScript
 - Faster execution
 - Better documented with official API reference
@@ -294,6 +326,7 @@ ensure consistency and avoid technical debt.
 
 **Technical Approach**:
 The refactor changes the execution pattern from pure AppleScript:
+
 ```applescript
 tell application "OmniFocus"
   tell front document
@@ -303,6 +336,7 @@ end tell
 ```
 
 To Omni Automation JavaScript via AppleScript's `evaluate javascript` command:
+
 ```applescript
 tell application "OmniFocus"
   evaluate javascript "
@@ -313,6 +347,7 @@ end tell
 ```
 
 This approach:
+
 1. Uses `osascript -e 'tell application "OmniFocus" to evaluate javascript "..."'`
 2. Allows full Omni Automation API access
 3. Maintains Node.js → osascript bridge (no new dependencies)
@@ -338,6 +373,7 @@ This approach:
    **Then** no TypeScript errors are introduced
 
 **Scope**:
+
 - Refactor `src/tools/primitives/*.ts` files that use AppleScript
 - Refactor `src/utils/omnifocusScripts/*.js` pre-built scripts
 - Update `src/utils/scriptExecution.ts` if needed for new execution pattern
@@ -345,6 +381,7 @@ This approach:
 - Update CLAUDE.md to reflect new approach
 
 **Out of Scope for this story** (addressed by subsequent user stories):
+
 - New folder tools (P1-P5 user stories)
 - iOS/iPadOS support (requires different transport, future enhancement)
 
@@ -559,9 +596,15 @@ restructuring.
   existing folders
 - **FR-010**: System MUST support specifying position via object structure:
   `{ placement: "before"|"after"|"beginning"|"ending", relativeTo?: string }`.
-  For "before"/"after", `relativeTo` references a sibling folder and is required.
-  For "beginning"/"ending", `relativeTo` references the parent folder (omit for
-  library root). Default is "ending" when not specified. Note: Uses `relativeTo`
+  Requirement rules per official OmniAutomation API:
+  - For `placement: "before"` or `"after"`: `relativeTo` is **REQUIRED** and
+    specifies the sibling folder ID (maps to `sibling.before`/`sibling.after`)
+  - For `placement: "beginning"` or `"ending"`: `relativeTo` is **OPTIONAL**
+    and specifies the parent folder ID (maps to `parent.beginning`/
+    `parent.ending`); when omitted, defaults to library root
+    (`library.beginning`/`library.ending`)
+  Default position when entire `position` object is omitted:
+  `{ placement: "ending" }` (i.e., `library.ending`). Note: Uses `relativeTo`
   for consistency with `move_folder` (FR-023) per clarification #26
 - **FR-011**: System MUST return the identifier of the newly created folder
 - **FR-011a**: All successful operations MUST return response structure:
@@ -600,16 +643,32 @@ restructuring.
 - **FR-022**: System MUST support moving folders to the root level (no parent)
 - **FR-023**: System MUST use unified position schema matching OmniAutomation's
   `moveSections(sections, position)` API: `{ placement: "before" | "after" |
-  "beginning" | "ending", relativeTo?: string }`. The `relativeTo` is the
-  parent folder ID for "beginning"/"ending", or sibling folder ID for
-  "before"/"after". Omitting `relativeTo` means library root. Position is
-  required (no default).
+  "beginning" | "ending", relativeTo?: string }`.
+  Requirement rules per official OmniAutomation API:
+  - For `placement: "before"` or `"after"`: `relativeTo` is **REQUIRED** and
+    specifies the sibling folder ID (maps to `sibling.before`/`sibling.after`)
+  - For `placement: "beginning"` or `"ending"`: `relativeTo` is **OPTIONAL**
+    and specifies the parent folder ID (maps to `parent.beginning`/
+    `parent.ending`); when omitted, defaults to library root
+    (`library.beginning`/`library.ending`)
+  **Position is required** for move operations (no default) per OmniAutomation's
+  `moveSections()` signature which does not accept null.
 - **FR-024**: System MUST preserve folder contents (projects and subfolders)
   during move
 - **FR-025**: System MUST prevent circular hierarchy (folder cannot be moved
   inside itself or its descendants)
 - **FR-026**: System MUST return confirmation of successful move with response
   `{ success: true, id: string, name: string }`
+
+#### Error Handling
+
+- **FR-027**: System MUST return structured disambiguation errors when a
+  name-based lookup matches multiple folders: `{ success: false, error: string,
+  code: "DISAMBIGUATION_REQUIRED", matchingIds: string[] }`. This enables AI
+  agents to programmatically present users with folder choices and retry with
+  the selected ID.
+- **FR-028**: System MUST return standard error responses for all other failures:
+  `{ success: false, error: string }` with descriptive error messages.
 
 ### Key Entities
 
