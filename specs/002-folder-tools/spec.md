@@ -136,9 +136,11 @@ folder operations
   the *actual* implementation methods (e.g., `new Folder()`, `deleteObject()`,
   `moveSections()`).
 
-  **Migration note**: Existing codebase uses AppleScript; User Story 0 (P0)
-  defines the refactoring task to migrate all existing tools to Omni Automation
-  before implementing new folder tools.
+  **Migration note**: The codebase has a mixed implementation - some tools use
+  pure AppleScript (e.g., `addProject.ts`) while others already use Omni
+  Automation JavaScript (e.g., `queryOmnifocus.ts`, pre-built dump scripts).
+  User Story 0 (P0) defines the refactoring task to migrate AppleScript-based
+  tools to Omni Automation for consistency before implementing new folder tools.
 - Q: Should `remove_folder` prevent deletion of non-empty folders by default?
   → A: No - match OmniFocus native behavior. OmniFocus allows deletion of folders
   with contents (recursively deletes everything). The `force` parameter is
@@ -254,7 +256,9 @@ folder operations
     const folder = new Folder("Test", library.ending);
     JSON.stringify({ success: true, id: folder.id.primaryKey, name: folder.name });
   `;
-  execFile('osascript', ['-e', `tell application "OmniFocus" to evaluate javascript "${escapeForAppleScript(script)}"`]);
+  // Escape quotes for AppleScript string embedding
+  const escaped = script.replace(/["\\]/g, '\\$&');
+  execFile('osascript', ['-e', `tell application "OmniFocus" to evaluate javascript "${escaped}"`]);
   ```
 
 - Q: When is `relativeTo` required vs optional in the position schema? → A: Per
@@ -358,9 +362,11 @@ This approach:
 1. **Given** an existing AppleScript-based tool (e.g., `addProject.ts`),
    **When** refactored to Omni Automation JavaScript,
    **Then** the tool produces identical functional behavior with same inputs/outputs
-2. **Given** all existing tools use AppleScript,
-   **When** the refactor is complete,
-   **Then** all tools use `evaluate javascript` with Omni Automation syntax
+2. **Given** the codebase has mixed implementations (some AppleScript, some
+   Omni Automation JavaScript),
+   **When** all AppleScript code is migrated to Omni Automation JavaScript,
+   **Then** all tools consistently use `evaluate javascript` with Omni Automation
+   JavaScript (zero remaining AppleScript implementations)
 3. **Given** the Omni Automation API,
    **When** implementing folder operations,
    **Then** code maps directly to documented methods (`new Folder()`, `deleteObject()`,
@@ -372,13 +378,16 @@ This approach:
    **When** building and type-checking,
    **Then** no TypeScript errors are introduced
 
-**Scope**:
+**Scope** (Migration: AppleScript → Omni Automation JavaScript):
 
-- Refactor `src/tools/primitives/*.ts` files that use AppleScript
-- Refactor `src/utils/omnifocusScripts/*.js` pre-built scripts
-- Update `src/utils/scriptExecution.ts` if needed for new execution pattern
-- Update tests to validate Omni Automation output
-- Update CLAUDE.md to reflect new approach
+- **Migrate** `src/tools/primitives/*.ts` files FROM AppleScript TO Omni
+  Automation JavaScript (e.g., `addProject.ts`, `addOmniFocusTask.ts`)
+- **Use as reference**: `src/utils/omnifocusScripts/*.js` pre-built scripts -
+  `omnifocusDump.js`, `listPerspectives.js`, and `getPerspectiveView.js`
+  already use Omni Automation JavaScript and serve as target patterns
+- Update `src/utils/scriptExecution.ts` to support `evaluate javascript` pattern
+- Update tests to validate Omni Automation JavaScript output
+- Update CLAUDE.md to document the Omni Automation JavaScript approach
 
 **Out of Scope for this story** (addressed by subsequent user stories):
 
@@ -715,9 +724,10 @@ restructuring.
 - Users understand that "dropped" folders are effectively archived but
   not deleted
 - Implementation uses Omni Automation JavaScript (the officially recommended
-  approach) via AppleScript's `evaluate javascript` command; existing codebase
-  will be refactored from AppleScript per User Story 0 before new folder tools
-  are implemented
+  approach) via AppleScript's `evaluate javascript` command; AppleScript-based
+  tools in the existing codebase will be refactored per User Story 0 before
+  new folder tools are implemented (some tools already use Omni Automation
+  and serve as reference patterns)
 
 ## Out of Scope
 
