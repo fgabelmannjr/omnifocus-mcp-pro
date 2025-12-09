@@ -116,13 +116,27 @@ folder operations
   `edit_item` conventions. Ensures consistent API surface and reduces cognitive
   load for users familiar with existing tools.
 - Q: Should folder tools use JXA/OmniAutomation or AppleScript for OmniFocus
-  interaction? → A: Use AppleScript to match existing codebase patterns
-  (`removeItem.ts`, `addProject.ts`, `addOmniFocusTask.ts`). Per OmniFocus API
-  documentation, AppleScript is the standard approach unless absolutely necessary
-  to use JXA. Note: OmniAutomation API references in this spec describe the
-  *conceptual* operations; implementation uses AppleScript equivalents (e.g.,
-  `delete` command instead of `deleteObject()`, `make new folder` instead of
-  `new Folder()`). This ensures consistency and reduces implementation risk.
+  interaction? → A: Use **Omni Automation JavaScript** - the officially recommended
+  approach per Omni Group documentation. AppleScript and JXA are listed as
+  "Extended Automation" (legacy/supplementary). Omni Automation offers:
+  - Cross-platform support (iOS, iPadOS, macOS) vs macOS-only for AppleScript
+  - Faster execution performance
+  - Better documentation with official API reference
+  - Active maintenance and enhancement by Omni Group
+
+  **Execution pattern**: Call Omni Automation from Node.js using AppleScript's
+  `evaluate javascript` command:
+  ```
+  osascript -e 'tell application "OmniFocus" to evaluate javascript "..."'
+  ```
+  This maintains the existing Node.js → osascript bridge while accessing the
+  full Omni Automation API. The spec's OmniAutomation API references now describe
+  the *actual* implementation methods (e.g., `new Folder()`, `deleteObject()`,
+  `moveSections()`).
+
+  **Migration note**: Existing codebase uses AppleScript; User Story 0 (P0)
+  defines the refactoring task to migrate all existing tools to Omni Automation
+  before implementing new folder tools.
 - Q: Should `remove_folder` prevent deletion of non-empty folders by default?
   → A: No - match OmniFocus native behavior. OmniFocus allows deletion of folders
   with contents (recursively deletes everything). The `force` parameter is
@@ -206,27 +220,39 @@ folder operations
   newName?: string, newStatus?: 'active'|'dropped' }`. At least one identifier
   (id or name) required; at least one update field (newName or newStatus)
   required. FR-015a updated to reflect this pattern.
-- Q: What are the complete AppleScript command equivalents for folder operations?
-  → A: Based on existing codebase patterns (`editItem.ts`, `removeItem.ts`,
-  `addProject.ts`) and OmniGroup documentation, the complete mapping is:
+- Q: What are the complete Omni Automation JavaScript methods for folder operations?
+  → A: Based on the official OmniAutomation API documentation
+  (omni-automation.com/omnifocus/), the complete mapping is:
 
-  | Operation | AppleScript Command |
-  |-----------|---------------------|
-  | Create folder at root | `make new folder with properties {name:"X"}` |
-  | Create folder in parent | `make new folder with properties {name:"X"} at end of folders of parentFolder` |
-  | Create at position | `make new folder with properties {name:"X"} at beginning of folders of parentFolder` |
-  | Find by ID | `first flattened folder where id = "xyz"` |
-  | Find by name | `first flattened folder where name = "X"` |
-  | Set name | `set name of theFolder to "newName"` |
-  | Set status | `set status of theFolder to dropped status` (note: "status" suffix required per OmniGroup docs) |
-  | Delete | `delete theFolder` |
-  | Move to folder | `move theFolder to end of folders of destFolder` |
-  | Move to root | `move theFolder to end of folders of front document` |
-  | Move before sibling | `move theFolder to before siblingFolder` |
-  | Move after sibling | `move theFolder to after siblingFolder` |
+  | Operation | Omni Automation JavaScript |
+  |-----------|----------------------------|
+  | Create folder at root | `new Folder("X", library.ending)` |
+  | Create folder in parent | `new Folder("X", parentFolder.ending)` |
+  | Create at beginning | `new Folder("X", parentFolder.beginning)` |
+  | Create before sibling | `new Folder("X", siblingFolder.before)` |
+  | Create after sibling | `new Folder("X", siblingFolder.after)` |
+  | Find by ID | `Folder.byIdentifier("xyz")` |
+  | Find by name | `flattenedFolders.byName("X")` |
+  | Set name | `folder.name = "newName"` |
+  | Set status (dropped) | `folder.status = Folder.Status.Dropped` |
+  | Set status (active) | `folder.status = Folder.Status.Active` |
+  | Delete | `deleteObject(folder)` |
+  | Move to folder end | `moveSections([folder], destFolder.ending)` |
+  | Move to root | `moveSections([folder], library.ending)` |
+  | Move before sibling | `moveSections([folder], siblingFolder.before)` |
+  | Move after sibling | `moveSections([folder], siblingFolder.after)` |
 
-  Status values: `active status`, `dropped status` (folders only have 2 states,
-  unlike projects which also have `on hold status` and `done status`).
+  Status values: `Folder.Status.Active`, `Folder.Status.Dropped` (folders only
+  have 2 states, unlike projects which also have `OnHold` and `Done`).
+
+  **Execution wrapper** (from Node.js):
+  ```javascript
+  const script = `
+    const folder = new Folder("Test", library.ending);
+    JSON.stringify({ success: true, id: folder.id.primaryKey, name: folder.name });
+  `;
+  execFile('osascript', ['-e', `tell application "OmniFocus" to evaluate javascript "${escapeForAppleScript(script)}"`]);
+  ```
 
 ## Overview
 
@@ -247,6 +273,82 @@ management system.
 - **Completeness**: Provide parity with OmniFocus's native folder capabilities
 
 ## User Scenarios & Testing *(mandatory)*
+
+### User Story 0 - Refactor to Omni Automation JavaScript (Priority: P0)
+
+As a developer maintaining this MCP server, I need to refactor the codebase from
+AppleScript to Omni Automation JavaScript so that we use Omni's recommended
+automation approach, enabling future cross-platform compatibility and better
+API alignment.
+
+**Why this priority**: Omni Automation JavaScript is the **officially recommended**
+approach per Omni Group documentation. AppleScript/JXA are listed as "Extended
+Automation" (legacy/supplementary). Omni Automation is:
+- Cross-platform (iOS, iPadOS, macOS) vs macOS-only for AppleScript
+- Faster execution
+- Better documented with official API reference
+- Actively maintained and enhanced
+
+This foundational refactor must happen before implementing new folder tools to
+ensure consistency and avoid technical debt.
+
+**Technical Approach**:
+The refactor changes the execution pattern from pure AppleScript:
+```applescript
+tell application "OmniFocus"
+  tell front document
+    make new folder with properties {name:"Test"}
+  end tell
+end tell
+```
+
+To Omni Automation JavaScript via AppleScript's `evaluate javascript` command:
+```applescript
+tell application "OmniFocus"
+  evaluate javascript "
+    const folder = new Folder('Test', library.ending);
+    JSON.stringify({ success: true, id: folder.id.primaryKey, name: folder.name });
+  "
+end tell
+```
+
+This approach:
+1. Uses `osascript -e 'tell application "OmniFocus" to evaluate javascript "..."'`
+2. Allows full Omni Automation API access
+3. Maintains Node.js → osascript bridge (no new dependencies)
+4. Returns JSON for structured responses
+
+**Acceptance Scenarios**:
+
+1. **Given** an existing AppleScript-based tool (e.g., `addProject.ts`),
+   **When** refactored to Omni Automation JavaScript,
+   **Then** the tool produces identical functional behavior with same inputs/outputs
+2. **Given** all existing tools use AppleScript,
+   **When** the refactor is complete,
+   **Then** all tools use `evaluate javascript` with Omni Automation syntax
+3. **Given** the Omni Automation API,
+   **When** implementing folder operations,
+   **Then** code maps directly to documented methods (`new Folder()`, `deleteObject()`,
+   `moveSections()`) without translation to AppleScript equivalents
+4. **Given** the refactored codebase,
+   **When** running the test suite,
+   **Then** all existing tests pass with no regressions
+5. **Given** the refactored codebase,
+   **When** building and type-checking,
+   **Then** no TypeScript errors are introduced
+
+**Scope**:
+- Refactor `src/tools/primitives/*.ts` files that use AppleScript
+- Refactor `src/utils/omnifocusScripts/*.js` pre-built scripts
+- Update `src/utils/scriptExecution.ts` if needed for new execution pattern
+- Update tests to validate Omni Automation output
+- Update CLAUDE.md to reflect new approach
+
+**Out of Scope for this story** (addressed by subsequent user stories):
+- New folder tools (P1-P5 user stories)
+- iOS/iPadOS support (requires different transport, future enhancement)
+
+---
 
 ### User Story 1 - View Folder Structure (Priority: P1)
 
@@ -553,8 +655,10 @@ restructuring.
   performed
 - Users understand that "dropped" folders are effectively archived but
   not deleted
-- Implementation uses AppleScript (not JXA) to match existing codebase
-  patterns; OmniAutomation API references describe conceptual operations
+- Implementation uses Omni Automation JavaScript (the officially recommended
+  approach) via AppleScript's `evaluate javascript` command; existing codebase
+  will be refactored from AppleScript per User Story 0 before new folder tools
+  are implemented
 
 ## Out of Scope
 
