@@ -60,8 +60,7 @@ export async function executeJXA(script: string): Promise<unknown[]> {
 
 // Function to execute scripts in OmniFocus using the URL scheme
 export async function executeOmniFocusScript(
-  scriptPath: string,
-  _args?: unknown
+  scriptPath: string
 ): Promise<unknown> {
   // Validate input
   if (typeof scriptPath !== 'string' || scriptPath.trim().length === 0) {
