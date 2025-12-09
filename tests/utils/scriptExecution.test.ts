@@ -32,7 +32,7 @@ vi.mock('node:fs', async (importOriginal) => {
       }
       return actual.existsSync(path);
     }),
-    readFileSync: vi.fn((path: string, _encoding?: string) => {
+    readFileSync: vi.fn((path: string) => {
       if (path.includes('omnifocusScripts')) {
         return '(() => { return JSON.stringify({ success: true }); })();';
       }

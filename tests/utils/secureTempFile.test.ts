@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { writeSecureTempFile } from '../../src/utils/secureTempFile.js';
 
 describe('secureTempFile', () => {
