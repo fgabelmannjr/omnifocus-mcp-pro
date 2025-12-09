@@ -187,16 +187,7 @@ export async function dumpDatabase(): Promise<OmnifocusDatabase> {
 
     return database;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    console.error('Error in dumpDatabase:', errorMessage);
-    // Log but return empty database structure
-    // The caller should handle the empty database appropriately
-    return {
-      exportDate: new Date().toISOString(),
-      tasks: [],
-      projects: {},
-      folders: {},
-      tags: {}
-    };
+    console.error('Error in dumpDatabase:', error);
+    throw error;
   }
 }
