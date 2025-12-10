@@ -467,6 +467,8 @@ The `cli.cjs` wrapper handles npm invocation and starts the built server.
 | Module resolution | Legacy `"moduleResolution": "node"` causes infinite type recursion | Use `"moduleResolution": "NodeNext"` and `"module": "NodeNext"` in tsconfig.json |
 
 ## Active Technologies
+- TypeScript 5.9+, Node.js 24+ + @modelcontextprotocol/sdk 1.24.3, Zod 4.1.x (002-folder-tools)
+- N/A (OmniFocus database accessed via Omni Automation) (002-folder-tools)
 
 | Category | Technology | Version |
 |----------|------------|---------|

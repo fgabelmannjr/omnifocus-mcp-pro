@@ -1,0 +1,148 @@
+/**
+ * edit_folder - Zod Schema Contract
+ *
+ * Edits folder properties (name and/or status) using partial update semantics.
+ * Only the fields you provide will be modified; omitted fields remain unchanged.
+ *
+ * This tool modifies folder properties only. For hierarchy changes:
+ * - Use `move_folder` to change folder position (parent changes are exclusively handled by move_folder)
+ * - Use `add_folder` to create new folders
+ * - Use `remove_folder` to delete folders
+ * - Use `list_folders` to query existing folders
+ *
+ * **Update Field Naming Convention**:
+ * Fields prefixed with `new*` (e.g., `newName`, `newStatus`) indicate the target value
+ * for the update operation, distinguishing them from identification fields.
+ *
+ * @see spec.md FR-012 to FR-016 for functional requirements
+ * @see spec.md clarification #13 for move_folder distinction
+ * @see spec.md clarification #31 for new* prefix convention
+ *
+ * Zod version: 4.1.x
+ */
+
+import { z } from 'zod';
+
+/**
+ * Input Schema for edit_folder
+ *
+ * **Identification**:
+ * Folders can be identified by `id` (takes precedence) or `name` (fallback).
+ * Name matching is case-sensitive (exact match required).
+ *
+ * **Update Semantics**:
+ * - Partial updates: Only provided fields are modified
+ * - At least one update field (newName or newStatus) is required
+ *
+ * **Error Handling**:
+ * - Folder not found: Returns `{ success: false, error: "Folder not found: <identifier>" }`
+ * - Multiple name matches: Returns disambiguation error with `code: 'DISAMBIGUATION_REQUIRED'`
+ * - Empty newName (after trim): Zod validation error
+ *
+ * @see spec.md clarification #4 for case-sensitive matching
+ * @see spec.md clarification #17 for trim behavior
+ * @see spec.md clarification #34 for disambiguation error format
+ */
+export const EditFolderInputSchema = z
+  .object({
+    // Identification (at least one required)
+    id: z.string().optional().describe('Folder ID to edit (takes precedence over name)'),
+    name: z
+      .string()
+      .optional()
+      .describe('Folder name to find (fallback if no id). Case-sensitive exact match.'),
+
+    // Update fields (at least one required)
+    // Prefixed with "new" to distinguish from identification fields
+    newName: z
+      .string()
+      .transform((val) => val.trim())
+      .refine((val) => val.length > 0, {
+        message: 'newName must be a non-empty string if provided'
+      })
+      .optional()
+      .describe(
+        'New name for the folder. Whitespace is trimmed automatically. Must be non-empty after trim.'
+      ),
+    newStatus: z
+      .enum(['active', 'dropped'])
+      .optional()
+      .describe("New status for the folder: 'active' (visible) or 'dropped' (archived)")
+  })
+  .refine(
+    (data) => {
+      // At least one identifier required
+      return data.id !== undefined || data.name !== undefined;
+    },
+    {
+      message: 'Either id or name must be provided to identify the folder',
+      path: ['id']
+    }
+  )
+  .refine(
+    (data) => {
+      // At least one update field required
+      return data.newName !== undefined || data.newStatus !== undefined;
+    },
+    {
+      message: 'At least one of newName or newStatus must be provided',
+      path: ['newName']
+    }
+  );
+
+export type EditFolderInput = z.infer<typeof EditFolderInputSchema>;
+
+// Success Response
+export const EditFolderSuccessSchema = z.object({
+  success: z.literal(true),
+  id: z.string().describe("Edited folder's unique identifier"),
+  name: z.string().describe("Edited folder's current name (reflects newName if provided)")
+});
+
+/**
+ * Standard Error Response
+ *
+ * **Possible Error Scenarios**:
+ * - Folder not found: "Folder not found: <identifier>"
+ * - Empty newName after trim: Zod validation error
+ *
+ * @see spec.md clarification #9 for standard error format
+ */
+export const EditFolderErrorSchema = z.object({
+  success: z.literal(false),
+  error: z.string().describe('Human-readable error message')
+});
+
+/**
+ * Disambiguation Error Response
+ *
+ * Returned when `name` lookup matches multiple folders.
+ * The caller should retry with a specific `id` from `matchingIds`.
+ *
+ * @see spec.md clarification #34 for disambiguation error format
+ */
+export const EditFolderDisambiguationSchema = z.object({
+  success: z.literal(false),
+  error: z.string().describe('Human-readable message indicating multiple matches'),
+  code: z.literal('DISAMBIGUATION_REQUIRED'),
+  matchingIds: z
+    .array(z.string())
+    .describe('IDs of all matching folders. Retry with one of these IDs.')
+});
+
+/**
+ * Combined Response Schema
+ *
+ * Uses `z.union()` instead of `z.discriminatedUnion()` because both
+ * `EditFolderErrorSchema` and `EditFolderDisambiguationSchema` have
+ * `success: false`, making discrimination by the `success` field impossible.
+ * Consumers should check for the presence of `code: 'DISAMBIGUATION_REQUIRED'`
+ * to distinguish between standard errors and disambiguation errors.
+ */
+export const EditFolderResponseSchema = z.union([
+  EditFolderSuccessSchema,
+  EditFolderDisambiguationSchema,
+  EditFolderErrorSchema
+]);
+
+export type EditFolderResponse = z.infer<typeof EditFolderResponseSchema>;

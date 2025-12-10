@@ -1,0 +1,145 @@
+/**
+ * move_folder - Zod Schema Contract
+ *
+ * Moves a folder to a new location in the OmniFocus hierarchy.
+ * This tool handles all position and parent changes for folders.
+ *
+ * This tool relocates folders only. For other operations:
+ * - Use `edit_folder` to modify folder properties (name, status) - NOT for hierarchy changes
+ * - Use `add_folder` to create new folders
+ * - Use `remove_folder` to delete folders
+ * - Use `list_folders` to query existing folders
+ *
+ * **Key Distinction from edit_folder**:
+ * `edit_folder` modifies folder properties (name, status).
+ * `move_folder` changes folder position/parent in the hierarchy.
+ * Parent changes are exclusively handled by `move_folder`.
+ *
+ * **Circular Move Prevention**:
+ * The system prevents moving a folder into its own descendants to avoid
+ * creating circular hierarchies. Attempting this returns an error.
+ *
+ * @see spec.md FR-021 to FR-026 for functional requirements
+ * @see spec.md clarification #13 for edit_folder distinction
+ * @see spec.md FR-025 for circular move prevention
+ * @see data-model.md for Position mapping to Omni Automation
+ *
+ * Zod version: 4.1.x
+ */
+
+import { z } from 'zod';
+import { type Position, PositionSchema } from './position.js';
+
+// Re-export for backward compatibility
+export { PositionSchema, type Position };
+
+/**
+ * Input Schema for move_folder
+ *
+ * **Identification**:
+ * Folders can be identified by `id` (takes precedence) or `name` (fallback).
+ * Name matching is case-sensitive (exact match required).
+ *
+ * **Position Requirement**:
+ * Unlike `add_folder`, the `position` field is REQUIRED for move operations.
+ * There is no default position - you must specify where to move the folder.
+ *
+ * **Error Handling**:
+ * - Folder not found: Returns `{ success: false, error: "Folder not found: <identifier>" }`
+ * - Multiple name matches: Returns disambiguation error with `code: 'DISAMBIGUATION_REQUIRED'`
+ * - Invalid relativeTo: Returns `{ success: false, error: "Folder not found: <id>" }`
+ * - Circular move: Returns `{ success: false, error: "Cannot move folder into its own descendants" }`
+ * - Library root operation: Returns `{ success: false, error: "Cannot move library: not a valid folder target" }`
+ *
+ * @see spec.md clarification #4 for case-sensitive matching
+ * @see spec.md clarification #11 for invalid relativeTo error format
+ * @see spec.md clarification #28 for library root operation rejection
+ * @see spec.md clarification #34 for disambiguation error format
+ * @see data-model.md line 166 for circular move detection
+ */
+export const MoveFolderInputSchema = z
+  .object({
+    // Identification (at least one required)
+    id: z.string().optional().describe('Folder ID to move (takes precedence over name)'),
+    name: z
+      .string()
+      .optional()
+      .describe('Folder name to find (fallback if no id). Case-sensitive exact match.'),
+
+    // Position (required for move - no default)
+    position: PositionSchema.describe(
+      'Target position for the folder. REQUIRED for move operations (unlike add_folder which defaults to library ending).'
+    )
+  })
+  .refine(
+    (data) => {
+      // At least one identifier required
+      return data.id !== undefined || data.name !== undefined;
+    },
+    {
+      message: 'Either id or name must be provided to identify the folder',
+      path: ['id']
+    }
+  );
+
+export type MoveFolderInput = z.infer<typeof MoveFolderInputSchema>;
+
+// Success Response
+export const MoveFolderSuccessSchema = z.object({
+  success: z.literal(true),
+  id: z.string().describe("Moved folder's unique identifier"),
+  name: z.string().describe("Moved folder's name")
+});
+
+/**
+ * Standard Error Response
+ *
+ * **Possible Error Scenarios**:
+ * - Folder not found: "Folder not found: <identifier>"
+ * - Invalid relativeTo: "Folder not found: <id>"
+ * - Circular move: "Cannot move folder into its own descendants"
+ * - Library root operation: "Cannot move library: not a valid folder target"
+ *
+ * @see spec.md clarification #9 for standard error format
+ * @see spec.md clarification #11 for invalid relativeTo error
+ * @see spec.md FR-025 for circular move prevention
+ * @see spec.md clarification #28 for library root rejection
+ */
+export const MoveFolderErrorSchema = z.object({
+  success: z.literal(false),
+  error: z.string().describe('Human-readable error message')
+});
+
+/**
+ * Disambiguation Error Response
+ *
+ * Returned when `name` lookup matches multiple folders.
+ * The caller should retry with a specific `id` from `matchingIds`.
+ *
+ * @see spec.md clarification #34 for disambiguation error format
+ */
+export const MoveFolderDisambiguationSchema = z.object({
+  success: z.literal(false),
+  error: z.string().describe('Human-readable message indicating multiple matches'),
+  code: z.literal('DISAMBIGUATION_REQUIRED'),
+  matchingIds: z
+    .array(z.string())
+    .describe('IDs of all matching folders. Retry with one of these IDs.')
+});
+
+/**
+ * Combined Response Schema
+ *
+ * Uses `z.union()` instead of `z.discriminatedUnion()` because both
+ * `MoveFolderErrorSchema` and `MoveFolderDisambiguationSchema` have
+ * `success: false`, making discrimination by the `success` field impossible.
+ * Consumers should check for the presence of `code: 'DISAMBIGUATION_REQUIRED'`
+ * to distinguish between standard errors and disambiguation errors.
+ */
+export const MoveFolderResponseSchema = z.union([
+  MoveFolderSuccessSchema,
+  MoveFolderDisambiguationSchema,
+  MoveFolderErrorSchema
+]);
+
+export type MoveFolderResponse = z.infer<typeof MoveFolderResponseSchema>;
