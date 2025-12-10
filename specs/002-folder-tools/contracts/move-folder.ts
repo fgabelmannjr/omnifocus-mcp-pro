@@ -19,6 +19,10 @@
  * The system prevents moving a folder into its own descendants to avoid
  * creating circular hierarchies. Attempting this returns an error.
  *
+ * **Name Lookup Trimming Behavior**:
+ * The `name` field used for folder identification does NOT trim whitespace.
+ * This is intentional: folder lookups use exact matching per spec clarification #4.
+ *
  * @see spec.md FR-021 to FR-026 for functional requirements
  * @see spec.md clarification #13 for edit_folder distinction
  * @see spec.md FR-025 for circular move prevention
@@ -28,10 +32,17 @@
  */
 
 import { z } from 'zod';
-import { type Position, PositionSchema } from './position.js';
+import {
+  type DisambiguationError,
+  DisambiguationSchema,
+  type Position,
+  PositionSchema
+} from './shared/index.js';
 
 // Re-export for backward compatibility
 export { PositionSchema, type Position };
+export { DisambiguationSchema as MoveFolderDisambiguationSchema };
+export type { DisambiguationError as MoveFolderDisambiguationError };
 
 /**
  * Input Schema for move_folder
@@ -67,11 +78,13 @@ export const MoveFolderInputSchema = z
     name: z
       .string()
       .optional()
-      .describe('Folder name to find (fallback if no id). Case-sensitive exact match.'),
+      .describe(
+        'Folder name to find (fallback if no id). Case-sensitive exact match. No trimming applied - must match folder name exactly.'
+      ),
 
     // Position (required for move - no default)
     position: PositionSchema.describe(
-      'Target position for the folder. REQUIRED for move operations (unlike add_folder which defaults to library ending).'
+      'Target position for the folder. REQUIRED for move operations (unlike add_folder which defaults to library ending). See PositionSchema for null vs undefined semantics.'
     )
   })
   .refine(
@@ -118,34 +131,19 @@ export const MoveFolderErrorSchema = z.object({
 });
 
 /**
- * Disambiguation Error Response
- *
- * Returned when `name` lookup matches multiple folders.
- * The caller should retry with a specific `id` from `matchingIds`.
- *
- * @see spec.md clarification #34 for disambiguation error format
- */
-export const MoveFolderDisambiguationSchema = z.object({
-  success: z.literal(false),
-  error: z.string().describe('Human-readable message indicating multiple matches'),
-  code: z.literal('DISAMBIGUATION_REQUIRED'),
-  matchingIds: z
-    .array(z.string())
-    .describe('IDs of all matching folders. Retry with one of these IDs.')
-});
-
-/**
  * Combined Response Schema
  *
  * Uses `z.union()` instead of `z.discriminatedUnion()` because both
- * `MoveFolderErrorSchema` and `MoveFolderDisambiguationSchema` have
+ * `MoveFolderErrorSchema` and `DisambiguationSchema` have
  * `success: false`, making discrimination by the `success` field impossible.
  * Consumers should check for the presence of `code: 'DISAMBIGUATION_REQUIRED'`
  * to distinguish between standard errors and disambiguation errors.
+ *
+ * @see shared/disambiguation.ts for isDisambiguationError() type guard
  */
 export const MoveFolderResponseSchema = z.union([
   MoveFolderSuccessSchema,
-  MoveFolderDisambiguationSchema,
+  DisambiguationSchema,
   MoveFolderErrorSchema
 ]);
 

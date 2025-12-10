@@ -52,11 +52,20 @@ specs/002-folder-tools/
 ├── data-model.md        # Phase 1 output - Entity definitions
 ├── quickstart.md        # Phase 1 output - Implementation guide
 ├── contracts/           # Phase 1 output - Zod schemas
+│   ├── index.ts         # Main barrel export
+│   ├── shared/          # Shared schemas
+│   │   ├── index.ts     # Shared barrel export
+│   │   ├── folder.ts    # FolderSchema
+│   │   ├── position.ts  # PositionSchema
+│   │   └── disambiguation.ts  # DisambiguationSchema + type guard
 │   ├── list-folders.ts
 │   ├── add-folder.ts
 │   ├── edit-folder.ts
 │   ├── remove-folder.ts
 │   └── move-folder.ts
+├── checklists/          # Implementation verification checklists
+│   ├── type-safety.md   # Type safety & schema consistency
+│   └── ...              # Additional checklists
 └── tasks.md             # Phase 2 output (/speckit.tasks command)
 ```
 
@@ -133,6 +142,53 @@ const omnijsScript = `
 const result = await executeOmniFocusScript(omnijsScript);
 ```
 
+### Type Safety Requirements
+
+**Type Inference Pattern**: Primitive functions MUST use Zod's type inference for all parameters and return types. This ensures compile-time type safety that matches runtime validation:
+
+```typescript
+// REQUIRED: Use z.infer for type derivation
+import {
+  AddFolderInputSchema,
+  AddFolderResponseSchema,
+  type AddFolderInput,    // = z.infer<typeof AddFolderInputSchema>
+  type AddFolderResponse  // = z.infer<typeof AddFolderResponseSchema>
+} from '../contracts/add-folder.js';
+
+// Primitive function signature uses inferred types
+export async function addFolderPrimitive(
+  input: AddFolderInput
+): Promise<AddFolderResponse> {
+  // Implementation...
+}
+```
+
+**Prohibitions**:
+
+- ❌ Type assertions (`as Type`) are prohibited - they bypass TypeScript's type checker
+- ❌ Manual type definitions that duplicate Zod schemas are prohibited
+- ❌ Using `any` or `unknown` without proper narrowing is prohibited
+
+### Definition/Primitive Relationship
+
+The **definitions/primitives separation** serves distinct purposes:
+
+| Layer | File | Purpose | Dependencies |
+|-------|------|---------|--------------|
+| **Definition** | `definitions/addFolder.ts` | MCP interface, tool registration, request handling | Imports primitive function |
+| **Primitive** | `primitives/addFolder.ts` | Business logic, OmniJS generation, response construction | Uses Zod schemas for types |
+
+**Key Responsibilities**:
+
+- **Definition**: Registers tool with MCP SDK, extracts input from request, calls primitive, formats MCP response
+- **Primitive**: Pure function with typed input/output, generates OmniJS, handles disambiguation, returns typed response
+
+**Why This Separation Matters**:
+
+1. **Testability**: Primitives can be tested without MCP SDK mocking
+2. **Type Safety**: Zod schemas define the contract between layers
+3. **Clarity**: MCP plumbing isolated from business logic
+
 ### API Mapping (Omni Automation)
 
 | MCP Tool | Omni Automation JavaScript |
@@ -160,10 +216,12 @@ function resolvePosition(position: Position): string {
 ## Dependencies
 
 ### External (no changes)
+
 - `@modelcontextprotocol/sdk@1.24.3` - MCP protocol
 - `zod@4.1.x` - Schema validation
 
 ### Internal (existing)
+
 - `src/utils/scriptExecution.ts` - `executeOmniFocusScript` function
 - `src/utils/tempFileUtils.ts` - Secure temp file handling (if needed)
 

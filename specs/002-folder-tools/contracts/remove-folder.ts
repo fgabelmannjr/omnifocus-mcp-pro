@@ -8,6 +8,10 @@
  * folder removal natively without requiring confirmation. The recursive deletion
  * behavior matches OmniFocus's native Omni Automation API.
  *
+ * **Name Lookup Trimming Behavior**:
+ * The `name` field used for folder identification does NOT trim whitespace.
+ * This is intentional: folder lookups use exact matching per spec clarification #4.
+ *
  * For other operations:
  * - Use `add_folder` to create new folders
  * - Use `edit_folder` to modify folder properties (name, status)
@@ -21,6 +25,11 @@
  */
 
 import { z } from 'zod';
+import { type DisambiguationError, DisambiguationSchema } from './shared/index.js';
+
+// Re-export disambiguation schema for backward compatibility
+export { DisambiguationSchema as RemoveFolderDisambiguationSchema };
+export type { DisambiguationError as RemoveFolderDisambiguationError };
 
 /**
  * Input Schema for remove_folder
@@ -47,7 +56,9 @@ export const RemoveFolderInputSchema = z
     name: z
       .string()
       .optional()
-      .describe('Folder name to find (fallback if no id). Case-sensitive exact match.')
+      .describe(
+        'Folder name to find (fallback if no id). Case-sensitive exact match. No trimming applied - must match folder name exactly.'
+      )
   })
   .refine(
     (data) => {
@@ -88,34 +99,19 @@ export const RemoveFolderErrorSchema = z.object({
 });
 
 /**
- * Disambiguation Error Response
- *
- * Returned when `name` lookup matches multiple folders.
- * The caller should retry with a specific `id` from `matchingIds`.
- *
- * @see spec.md clarification #34 for disambiguation error format
- */
-export const RemoveFolderDisambiguationSchema = z.object({
-  success: z.literal(false),
-  error: z.string().describe('Human-readable message indicating multiple matches'),
-  code: z.literal('DISAMBIGUATION_REQUIRED'),
-  matchingIds: z
-    .array(z.string())
-    .describe('IDs of all matching folders. Retry with one of these IDs.')
-});
-
-/**
  * Combined Response Schema
  *
  * Uses `z.union()` instead of `z.discriminatedUnion()` because both
- * `RemoveFolderErrorSchema` and `RemoveFolderDisambiguationSchema` have
+ * `RemoveFolderErrorSchema` and `DisambiguationSchema` have
  * `success: false`, making discrimination by the `success` field impossible.
  * Consumers should check for the presence of `code: 'DISAMBIGUATION_REQUIRED'`
  * to distinguish between standard errors and disambiguation errors.
+ *
+ * @see shared/disambiguation.ts for isDisambiguationError() type guard
  */
 export const RemoveFolderResponseSchema = z.union([
   RemoveFolderSuccessSchema,
-  RemoveFolderDisambiguationSchema,
+  DisambiguationSchema,
   RemoveFolderErrorSchema
 ]);
 

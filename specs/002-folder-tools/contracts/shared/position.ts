@@ -25,6 +25,30 @@ import { z } from 'zod';
  * - For `before`/`after`: REQUIRED - specifies sibling folder ID
  * - For `beginning`/`ending`: OPTIONAL - specifies parent folder ID (omit for library root)
  *
+ * **Null vs Undefined for relativeTo**:
+ * The `relativeTo` field uses `.optional()` which means it accepts `string | undefined`,
+ * NOT `string | null`. This is intentional:
+ * - **Omit relativeTo** (undefined): Maps to library root for beginning/ending
+ * - **Passing null**: Will cause a Zod validation error (null is not a valid string)
+ *
+ * To target library root, simply omit the relativeTo field:
+ * ```typescript
+ * // Correct - library root
+ * { placement: "ending" }
+ *
+ * // Correct - specific parent folder
+ * { placement: "ending", relativeTo: "folder-id" }
+ *
+ * // WRONG - null causes validation error
+ * { placement: "ending", relativeTo: null }
+ * ```
+ *
+ * **Empty String Handling**:
+ * An empty string for `relativeTo` is treated as missing. For `before`/`after`
+ * placements, this triggers: `"relativeTo is required when placement is 'before' or 'after'"`.
+ * For `beginning`/`ending`, an empty string would cause an invalid folder lookup error
+ * at the OmniJS layer.
+ *
  * **Position Mapping to Omni Automation**:
  * | MCP Position                                      | Omni Automation Expression                    |
  * |--------------------------------------------------|----------------------------------------------|
@@ -37,6 +61,7 @@ import { z } from 'zod';
  *
  * **Error Handling**:
  * - Missing `relativeTo` for before/after: `"relativeTo is required when placement is 'before' or 'after'"`
+ * - Empty string `relativeTo` for before/after: Same error as missing (treated as not provided)
  * - Invalid `relativeTo` (folder not found): `"Invalid relativeTo '[id]': folder not found"`
  * - Invalid `relativeTo` (wrong parent for before/after): `"Invalid relativeTo '[id]': folder is not a sibling in target parent"`
  *   This error occurs when using `before`/`after` placement and the `relativeTo` folder exists
@@ -57,12 +82,13 @@ export const PositionSchema = z
       .string()
       .optional()
       .describe(
-        'Folder ID to position relative to. REQUIRED for before/after (sibling), OPTIONAL for beginning/ending (parent; omit for library root)'
+        'Folder ID to position relative to. REQUIRED for before/after (sibling), OPTIONAL for beginning/ending (parent; omit for library root). Note: null is not accepted - omit the field entirely for library root.'
       )
   })
   .refine(
     (data) => {
-      // For before/after, relativeTo is required
+      // For before/after, relativeTo is required and must be non-empty
+      // Empty string is treated as missing (same validation error)
       if (data.placement === 'before' || data.placement === 'after') {
         return data.relativeTo !== undefined && data.relativeTo.length > 0;
       }

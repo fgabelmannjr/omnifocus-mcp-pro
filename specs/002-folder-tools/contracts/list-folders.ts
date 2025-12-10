@@ -14,6 +14,10 @@
  */
 
 import { z } from 'zod';
+import { type Folder, FolderSchema } from './shared/index.js';
+
+// Re-export shared Folder schema for backward compatibility
+export { FolderSchema, type Folder };
 
 /**
  * Input Schema for list_folders
@@ -67,25 +71,6 @@ export const ListFoldersInputSchema = z.object({
 });
 
 export type ListFoldersInput = z.infer<typeof ListFoldersInputSchema>;
-
-/**
- * Folder entity schema matching data-model.md Folder definition.
- *
- * @see data-model.md for complete entity specification
- */
-export const FolderSchema = z.object({
-  id: z.string().describe("Folder's unique identifier (Omni Automation primaryKey)"),
-  name: z.string().describe("Folder's display name"),
-  status: z
-    .enum(['active', 'dropped'])
-    .describe("Folder's current status: 'active' (visible) or 'dropped' (archived)"),
-  parentId: z
-    .string()
-    .nullable()
-    .describe('Parent folder ID (null for root-level folders in library)')
-});
-
-export type Folder = z.infer<typeof FolderSchema>;
 
 // Success Response
 export const ListFoldersSuccessSchema = z.object({

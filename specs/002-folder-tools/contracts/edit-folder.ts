@@ -14,6 +14,11 @@
  * Fields prefixed with `new*` (e.g., `newName`, `newStatus`) indicate the target value
  * for the update operation, distinguishing them from identification fields.
  *
+ * **Name Lookup Trimming Behavior**:
+ * The `name` field used for folder identification does NOT trim whitespace.
+ * This is intentional: folder lookups use exact matching per spec clarification #4.
+ * Only the `newName` update field trims whitespace (matching folder creation behavior).
+ *
  * @see spec.md FR-012 to FR-016 for functional requirements
  * @see spec.md clarification #13 for move_folder distinction
  * @see spec.md clarification #31 for new* prefix convention
@@ -22,6 +27,11 @@
  */
 
 import { z } from 'zod';
+import { type DisambiguationError, DisambiguationSchema } from './shared/index.js';
+
+// Re-export disambiguation schema for backward compatibility
+export { DisambiguationSchema as EditFolderDisambiguationSchema };
+export type { DisambiguationError as EditFolderDisambiguationError };
 
 /**
  * Input Schema for edit_folder
@@ -54,7 +64,9 @@ export const EditFolderInputSchema = z
     name: z
       .string()
       .optional()
-      .describe('Folder name to find (fallback if no id). Case-sensitive exact match.'),
+      .describe(
+        'Folder name to find (fallback if no id). Case-sensitive exact match. No trimming applied - must match folder name exactly.'
+      ),
 
     // Update fields (at least one required)
     // Prefixed with "new" to distinguish from identification fields
@@ -122,34 +134,19 @@ export const EditFolderErrorSchema = z.object({
 });
 
 /**
- * Disambiguation Error Response
- *
- * Returned when `name` lookup matches multiple folders.
- * The caller should retry with a specific `id` from `matchingIds`.
- *
- * @see spec.md clarification #34 for disambiguation error format
- */
-export const EditFolderDisambiguationSchema = z.object({
-  success: z.literal(false),
-  error: z.string().describe('Human-readable message indicating multiple matches'),
-  code: z.literal('DISAMBIGUATION_REQUIRED'),
-  matchingIds: z
-    .array(z.string())
-    .describe('IDs of all matching folders. Retry with one of these IDs.')
-});
-
-/**
  * Combined Response Schema
  *
  * Uses `z.union()` instead of `z.discriminatedUnion()` because both
- * `EditFolderErrorSchema` and `EditFolderDisambiguationSchema` have
+ * `EditFolderErrorSchema` and `DisambiguationSchema` have
  * `success: false`, making discrimination by the `success` field impossible.
  * Consumers should check for the presence of `code: 'DISAMBIGUATION_REQUIRED'`
  * to distinguish between standard errors and disambiguation errors.
+ *
+ * @see shared/disambiguation.ts for isDisambiguationError() type guard
  */
 export const EditFolderResponseSchema = z.union([
   EditFolderSuccessSchema,
-  EditFolderDisambiguationSchema,
+  DisambiguationSchema,
   EditFolderErrorSchema
 ]);
 

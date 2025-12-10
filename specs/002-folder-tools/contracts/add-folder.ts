@@ -16,7 +16,7 @@
  */
 
 import { z } from 'zod';
-import { type Position, PositionSchema } from './position.js';
+import { type Position, PositionSchema } from './shared/index.js';
 
 // Re-export for backward compatibility
 export { PositionSchema, type Position };
@@ -28,6 +28,12 @@ export { PositionSchema, type Position };
  * This tool does NOT support disambiguation because it creates new folders
  * rather than looking up existing ones by name. Only tools that accept a `name`
  * parameter for folder identification support disambiguation.
+ *
+ * **Default Position Behavior**:
+ * When the `position` field is omitted, the primitive layer applies the default:
+ * `{ placement: "ending" }` which maps to `library.ending` in Omni Automation.
+ * This is an implementation-level default, not a Zod schema default, to keep
+ * the schema simple and allow explicit override checking in the primitive.
  *
  * **Error Handling**:
  * - Empty name (after trim): `"Folder name is required and must be a non-empty string"`
@@ -51,7 +57,7 @@ export const AddFolderInputSchema = z.object({
       'Name for the new folder (required, non-empty after trim). Whitespace is trimmed automatically.'
     ),
   position: PositionSchema.optional().describe(
-    'Where to create the folder. Default: { placement: "ending" } (appended to library root)'
+    'Where to create the folder. Default (implementation-level): { placement: "ending" } (appended to library root). See PositionSchema for null vs undefined semantics.'
   )
 });
 
