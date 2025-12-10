@@ -4,45 +4,92 @@ paths:
   - "src/tools/primitives/**/*.ts"
 ---
 
-# JXA Development Rules
+# Omni Automation Development Rules
 
 ## Critical Behaviors
 
-- JXA errors fail silently - test in Script Editor first
+- OmniJS errors fail silently - test in Script Editor first
 - Always wrap in try-catch with JSON error returns
-- Use `.tasks.whose()` syntax (not SQL)
-- Date comparisons use `.getTime()` for milliseconds
+- Use `executeOmniFocusScript()` to run OmniJS via JXA wrapper
+- Use `writeSecureTempFile()` for script execution
 
 ## Script Structure
 
-All JXA scripts must follow this pattern:
+All OmniJS scripts must follow this IIFE pattern:
 
 ```javascript
-try {
-    // ... JXA logic ...
-    JSON.stringify({ success: true, data: result });
-} catch (e) {
-    JSON.stringify({ success: false, error: e.message || String(e) });
-}
+(function() {
+  try {
+    // ... Omni Automation logic ...
+    return JSON.stringify({ success: true, data: result });
+  } catch (e) {
+    return JSON.stringify({ success: false, error: e.message || String(e) });
+  }
+})();
 ```
 
-## String Building
+## String Escaping
 
-- Template literals inside JXA need careful escaping
-- Backticks inside generated JXA require extra escaping
-- OmniFocus interprets dates as local time, not UTC
+When generating OmniJS from TypeScript:
 
-## OmniFocus Object Model
+```typescript
+const escapeForJS = (str: string): string =>
+  str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+```
 
-- Use `.tasks.whose()` for filtering tasks
-- Use `.projects.whose()` for filtering projects
-- Use `.flattenedTasks` for all tasks regardless of hierarchy
-- Date properties return JavaScript Date objects
+## OmniFocus Object Model (OmniJS)
+
+### Finding Items
+
+```javascript
+Task.byIdentifier(id)          // Find task by ID
+Project.byIdentifier(id)       // Find project by ID
+Folder.byIdentifier(id)        // Find folder by ID
+flattenedTasks.byName(name)    // Find task by name
+flattenedProjects.byName(name) // Find project by name
+flattenedFolders.byName(name)  // Find folder by name
+```
+
+### Creating Items
+
+```javascript
+new Task(name, inbox.ending)   // Create task in inbox
+new Task(name, project)        // Create task in project
+new Project(name, folder)      // Create project in folder
+new Folder(name)               // Create top-level folder
+new Tag(name)                  // Create tag
+```
+
+### Modifying Items
+
+```javascript
+task.markComplete()            // Complete task
+task.markIncomplete()          // Mark incomplete
+task.active = false            // Drop task
+project.status = Project.Status.Active   // Project status
+project.status = Project.Status.OnHold
+project.status = Project.Status.Done
+project.status = Project.Status.Dropped
+```
+
+### Tag Operations
+
+```javascript
+task.addTag(tagObj)            // Add single tag
+task.removeTag(tagObj)         // Remove single tag
+task.clearTags()               // Remove all tags
+```
+
+### Deleting Items
+
+```javascript
+deleteObject(item)             // Delete task, project, or folder
+```
 
 ## Date Handling Chain
 
 1. **Input**: ISO 8601 strings from MCP tools
-2. **JXA**: Convert to `new Date("2024-12-25T00:00:00Z")`
+2. **OmniJS**: Convert to `new Date("2024-12-25T00:00:00Z")`
 3. **OmniFocus**: Stores as native Date objects
 4. **Comparison**: Use `.getTime()` for milliseconds
 5. **Output**: Convert back to ISO 8601 for response

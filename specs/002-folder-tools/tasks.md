@@ -27,9 +27,9 @@
 
 **Purpose**: Copy contract schemas and prepare implementation foundation
 
-- [ ] T001 Copy contract schemas from specs/002-folder-tools/contracts/ to src/contracts/folder-tools/
-- [ ] T002 [P] Create barrel export in src/contracts/folder-tools/index.ts
-- [ ] T003 [P] Verify contracts compile with `pnpm typecheck`
+- [x] T001 Copy contract schemas from specs/002-folder-tools/contracts/ to src/contracts/folder-tools/
+- [x] T002 [P] Create barrel export in src/contracts/folder-tools/index.ts
+- [x] T003 [P] Verify contracts compile with `pnpm typecheck`
 
 ---
 
@@ -45,26 +45,40 @@
 
 ### Analysis
 
-- [ ] T004 [US0] Audit src/tools/primitives/ to identify AppleScript-based files needing migration. Output: PR comment or commit message listing files and their current automation approach (AppleScript, Omni Automation, or hybrid)
-- [ ] T005 [US0] Document current patterns in each file (AppleScript vs Omni Automation). Output: Table in PR description with columns: File | Current Approach | Migration Needed (Y/N)
+- [x] T004 [US0] Audit src/tools/primitives/ to identify AppleScript-based files needing migration. Output: PR comment or commit message listing files and their current automation approach (AppleScript, Omni Automation, or hybrid)
+- [x] T005 [US0] Document current patterns in each file (AppleScript vs Omni Automation). Output: Table in PR description with columns: File | Current Approach | Migration Needed (Y/N)
+
+**Audit Results (T004-T005):**
+| File | Current Approach | Migration Needed |
+|------|------------------|------------------|
+| addProject.ts | AppleScript (`tell application "OmniFocus"`) | Yes |
+| addOmniFocusTask.ts | AppleScript (`tell application "OmniFocus"`) | Yes |
+| editItem.ts | AppleScript (`tell application "OmniFocus"`) | Yes |
+| removeItem.ts | AppleScript (`tell application "OmniFocus"`) | Yes |
+| queryOmnifocus.ts | Omni Automation JS (JXA via `executeOmniFocusScript`) | No |
+| listPerspectives.ts | Omni Automation JS (via `@listPerspectives.js`) | No |
+| batchAddItems.ts | AppleScript (delegates to addOmniFocusTask) | Yes (indirect) |
+| batchRemoveItems.ts | AppleScript (delegates to removeItem) | Yes (indirect) |
+| getPerspectiveView.ts | Omni Automation JS (via `executeOmniFocusScript`) | No |
+| queryOmnifocusDebug.ts | Omni Automation JS | No |
 
 ### 🔴 RED Phase - Update Tests First
 
-- [ ] T006 [P] [US0] Update tests for addProject to expect Omni Automation JavaScript output → verify FAILS
-- [ ] T007 [P] [US0] Update tests for addOmniFocusTask to expect Omni Automation JavaScript output → verify FAILS
+- [x] T006 [P] [US0] Update tests for addProject to expect Omni Automation JavaScript output → verify FAILS ✓
+- [x] T007 [P] [US0] Update tests for addOmniFocusTask to expect Omni Automation JavaScript output → verify FAILS ✓
 
 ### 🟢 GREEN Phase - Migration
 
-- [ ] T008 [US0] Refactor src/tools/primitives/addProject.ts to Omni Automation JavaScript → tests GREEN
-- [ ] T009 [US0] Refactor src/tools/primitives/addOmniFocusTask.ts to Omni Automation JavaScript → tests GREEN
-- [ ] T010 [US0] Verify editItem.ts uses consistent Omni Automation patterns (refactor if needed)
-- [ ] T011 [US0] Verify removeItem.ts uses consistent Omni Automation patterns (refactor if needed)
+- [x] T008 [US0] Refactor src/tools/primitives/addProject.ts to Omni Automation JavaScript → tests GREEN ✓
+- [x] T009 [US0] Refactor src/tools/primitives/addOmniFocusTask.ts to Omni Automation JavaScript → tests GREEN ✓
+- [x] T010 [US0] Verify editItem.ts uses consistent Omni Automation patterns (refactor if needed) → refactored to Omni Automation ✓
+- [x] T011 [US0] Verify removeItem.ts uses consistent Omni Automation patterns (refactor if needed) → refactored to Omni Automation ✓
 
 ### 🔵 REFACTOR Phase - Documentation
 
-- [ ] T012 [US0] Update CLAUDE.md to document Omni Automation JavaScript approach
-- [ ] T013 [US0] Run full test suite to verify no regressions: `pnpm test`
-- [ ] T014 [US0] Run build and typecheck: `pnpm build && pnpm typecheck`
+- [x] T012 [US0] Update CLAUDE.md to document Omni Automation JavaScript approach ✓
+- [x] T013 [US0] Run full test suite to verify no regressions: `pnpm test` → 384 tests pass ✓
+- [x] T014 [US0] Run build and typecheck: `pnpm build && pnpm typecheck` → build succeeds ✓
 
 **Checkpoint**: Foundation ready - all tools consistently use Omni Automation JavaScript
 

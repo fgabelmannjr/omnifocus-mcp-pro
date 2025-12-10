@@ -5,8 +5,9 @@ This file provides guidance to Claude Code when working with this repository.
 ## Project Overview
 
 OmniFocus MCP Server bridges AI assistants with OmniFocus task management on
-macOS. It uses JXA (JavaScript for Automation) to interact with OmniFocus,
-providing tools to view, create, edit, and remove tasks and projects.
+macOS. It uses **Omni Automation JavaScript** (OmniJS) executed via JXA wrapper
+to interact with OmniFocus, providing tools to view, create, edit, and remove
+tasks, projects, and folders.
 
 ## Development Philosophy
 
@@ -86,11 +87,61 @@ providing tools to view, create, edit, and remove tasks and projects.
 | Gotcha | Solution |
 |--------|----------|
 | Build before test | Server runs from `dist/`; use `pnpm dev` for watch mode |
-| JXA syntax errors | Missing quotes/escaping causes silent failures; test in Script Editor |
+| OmniJS syntax errors | Missing quotes/escaping causes silent failures; test in Script Editor |
 | Date timezones | OmniFocus interprets local time; use explicit ISO 8601 |
-| Empty JXA results | JXA errors produce empty output; wrap in try-catch with JSON |
+| Empty script results | OmniJS errors produce empty output; wrap in try-catch with JSON |
 | SDK type arguments | Use `RequestHandlerExtra<ServerRequest, ServerNotification>` |
 | Module resolution | Use `"moduleResolution": "NodeNext"` in tsconfig |
+
+## Omni Automation JavaScript Patterns
+
+All primitives use **Omni Automation JavaScript** (OmniJS) via `executeOmniFocusScript()`:
+
+```typescript
+// Primitive pattern
+const script = generateOmniScript(params);
+const tempFile = writeSecureTempFile(script, 'tool_name', '.js');
+const result = await executeOmniFocusScript(tempFile.path);
+tempFile.cleanup();
+```
+
+### OmniJS Script Template
+
+```javascript
+(function() {
+  try {
+    // Find items
+    var task = Task.byIdentifier(id);
+    var project = Project.byIdentifier(id);
+    var folder = Folder.byIdentifier(id);
+    // Or by name
+    var task = flattenedTasks.byName(name);
+    var project = flattenedProjects.byName(name);
+    var folder = flattenedFolders.byName(name);
+
+    // Create items
+    var task = new Task(name, inbox.ending);
+    var project = new Project(name, folder);
+    var folder = new Folder(name);
+
+    // Delete items
+    deleteObject(item);
+
+    return JSON.stringify({ success: true, data: result });
+  } catch (e) {
+    return JSON.stringify({ success: false, error: e.message || String(e) });
+  }
+})();
+```
+
+### Key OmniJS APIs
+
+- **Task**: `Task.byIdentifier()`, `flattenedTasks.byName()`, `new Task(name, position)`
+- **Project**: `Project.byIdentifier()`, `flattenedProjects.byName()`, `new Project(name, folder)`
+- **Folder**: `Folder.byIdentifier()`, `flattenedFolders.byName()`, `new Folder(name)`
+- **Tag**: `flattenedTags.byName()`, `new Tag(name)`, `task.addTag()`, `task.clearTags()`
+- **Status**: `task.markComplete()`, `task.markIncomplete()`, `task.active = false` (drop)
+- **Delete**: `deleteObject(item)` - works for tasks, projects, folders
 
 ## Modular Rules
 
@@ -142,4 +193,6 @@ Domain-specific rules in `.claude/rules/` load automatically:
 ## Recent Changes
 
 - **002-folder-tools**: Adding folder management tools (in progress)
+  - Migrated all primitives from AppleScript to Omni Automation JavaScript
+  - addProject, addOmniFocusTask, editItem, removeItem now use OmniJS
 - **001-tooling-modernization**: Migrated to tsup, Vitest, Biome, Node 24+
