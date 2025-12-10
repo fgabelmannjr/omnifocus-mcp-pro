@@ -214,14 +214,173 @@ Operations:
 - remove_folder: Delete with entire subtree
 ```
 
-## Error Codes
+## Error Handling
+
+### Disambiguation Support by Tool
+
+Not all tools support disambiguation. The following table clarifies which tools
+return disambiguation errors and why:
+
+| Tool | Disambiguation | Reason |
+|------|----------------|--------|
+| `list_folders` | ❌ No | Filters by `parentId` (an ID), not by name lookup |
+| `add_folder` | ❌ No | Creates new folders; does not look up existing by name |
+| `edit_folder` | ✅ Yes | Supports `name` parameter for folder identification |
+| `remove_folder` | ✅ Yes | Supports `name` parameter for folder identification |
+| `move_folder` | ✅ Yes | Supports `name` parameter for folder identification |
+
+**Disambiguation Threshold**: Disambiguation errors are triggered when a name-based
+lookup matches **more than one folder** (count > 1). A single match proceeds normally;
+zero matches returns a "folder not found" error.
+
+### Error Codes
 
 | Code | Trigger | Response Field |
 |------|---------|----------------|
-| `DISAMBIGUATION_REQUIRED` | Name matches multiple folders | `matchingIds` array |
+| `DISAMBIGUATION_REQUIRED` | Name matches multiple folders (count > 1) | `matchingIds` array |
 | (none) | Folder not found | `error` message |
 | (none) | Invalid parentId | `error` message |
 | (none) | Invalid relativeTo | `error` message |
+| (none) | Wrong-parent relativeTo | `error` message |
 | (none) | Circular move | `error` message |
 | (none) | Empty name | `error` message |
 | (none) | Library operation | `error` message |
+| (none) | Zod validation failure | `error` message |
+
+### Error Message Format Standards
+
+All error messages MUST follow these formatting rules per spec clarifications #11 and #19:
+
+**Pattern**: `"Invalid [field] '[value]': [reason]"` or `"[Action] failed: [reason]"`
+
+**Requirements**:
+1. **Quote problematic values**: Include the actual value in single quotes (e.g., `'xyz'`)
+2. **Explain the failure**: Append reason after colon (e.g., `: folder not found`)
+3. **Be actionable**: Message should indicate what went wrong and implicitly how to fix it
+
+**Prohibitions** (per Constitution Principle V):
+- ❌ Silent failures are prohibited - all errors must surface
+- ❌ Generic messages like "Operation failed" are prohibited
+- ❌ Swallowing exceptions without logging/re-throwing is prohibited
+
+### Standard Error Messages by Scenario
+
+| Scenario | Error Message Format |
+|----------|---------------------|
+| Folder not found (by ID) | `"Invalid id '[id]': folder not found"` |
+| Folder not found (by name) | `"Invalid name '[name]': folder not found"` |
+| Invalid parentId | `"Invalid parentId '[id]': folder not found"` |
+| Invalid relativeTo (not found) | `"Invalid relativeTo '[id]': folder not found"` |
+| Invalid relativeTo (wrong parent) | `"Invalid relativeTo '[id]': folder is not a sibling in target parent"` |
+| Circular move | `"Cannot move folder '[id]': target is a descendant of source"` |
+| Empty name | `"Folder name is required and must be a non-empty string"` |
+| Library deletion | `"Cannot delete library: not a valid folder target"` |
+| Library move | `"Cannot move library: not a valid folder target"` |
+| Missing relativeTo | `"relativeTo is required when placement is 'before' or 'after'"` |
+| Missing identifier | `"Either id or name must be provided to identify the folder"` |
+| Missing update field | `"At least one of newName or newStatus must be provided"` |
+| Disambiguation | `"Ambiguous name '[name]': found [count] matches"` with `matchingIds` array |
+
+### Disambiguation Error Message Quality
+
+When returning disambiguation errors, the `error` field MUST include:
+1. The ambiguous name that was searched
+2. The count of matches found
+
+**Example**: `"Ambiguous name 'Archive': found 3 matches"`
+
+The `matchingIds` array provides the IDs for retry. AI agents should:
+1. Detect via `code: 'DISAMBIGUATION_REQUIRED'`
+2. Query folder details using the IDs
+3. Present user with contextual choices
+4. Retry with selected ID
+
+### Error Handling Layers Architecture
+
+Errors flow through four layers, each with specific responsibilities:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Layer 1: Zod Validation (Input Validation)                      │
+│ - Validates input schema before any processing                  │
+│ - Produces field-specific validation errors                     │
+│ - Format: Zod's default error structure, wrapped in standard    │
+│   error response: { success: false, error: "[field]: [message]" }│
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Layer 2: OmniJS Script Execution                                │
+│ - Runs Omni Automation JavaScript inside OmniFocus              │
+│ - All scripts wrapped in try-catch returning JSON               │
+│ - Format: { success: false, error: "[message]" }                │
+│ - Transport errors (timeout, OmniFocus not running) handled     │
+│   by scriptExecution.ts using existing patterns                 │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Layer 3: Primitive Function                                     │
+│ - Parses OmniJS JSON response                                   │
+│ - Adds context to errors (operation type, identifiers)          │
+│ - Handles disambiguation logic for name lookups                 │
+│ - Returns typed response or throws with context                 │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Layer 4: Definition Handler (MCP Interface)                     │
+│ - Transforms response to MCP format                             │
+│ - Success: { content: [{ type: 'text', text: JSON.stringify(...) }] }
+│ - Error: { content: [{ type: 'text', text: JSON.stringify({ success: false, error: ... }) }] }
+│ - Never lets exceptions bubble to MCP client unhandled          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Transformation Rules**:
+- Zod errors → Extract message, wrap in standard error format
+- OmniJS errors → Parse JSON, propagate error field
+- Primitive errors → Add context, format message per standards
+- Definition errors → Serialize to MCP text content
+
+### Zod Validation Error Handling
+
+Zod validation errors are caught at the definition layer and transformed to
+standard error format. The transformation extracts the first error message
+and includes field path:
+
+```typescript
+// Zod error transformation pattern
+try {
+  const input = InputSchema.parse(rawInput);
+} catch (e) {
+  if (e instanceof z.ZodError) {
+    const firstError = e.errors[0];
+    const field = firstError.path.join('.');
+    const message = firstError.message;
+    return {
+      success: false,
+      error: field ? `${field}: ${message}` : message
+    };
+  }
+  throw e; // Re-throw non-Zod errors
+}
+```
+
+### Edge Case Error Handling
+
+| Edge Case | Error Handling Approach |
+|-----------|------------------------|
+| **Concurrent modification** | Operations reflect state at execution time. If folder is deleted during operation, OmniJS returns null which surfaces as "folder not found" error. No special handling required. |
+| **Database inconsistency** | Assumed not to occur (spec assumption). If encountered, OmniJS errors propagate with original message. |
+| **Error message length** | No truncation policy. Error messages should be concise by design (< 200 characters). Long messages indicate implementation issue. |
+| **Permission denial** | Handled by existing scriptExecution.ts patterns. Surfaces as transport-level error with OmniFocus/osascript error message. |
+
+### Corrective Action Guidance
+
+Error messages should be self-explanatory. When additional guidance is helpful:
+
+| Error Type | Implicit Corrective Action |
+|------------|---------------------------|
+| Folder not found | Verify ID/name is correct; use `list_folders` to find valid IDs |
+| Disambiguation | Use one of the IDs from `matchingIds` array |
+| Invalid relativeTo | Verify the referenced folder exists and is in correct parent |
+| Circular move | Choose a different destination that is not a descendant |
+| Empty name | Provide a non-empty, non-whitespace folder name |

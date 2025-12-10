@@ -35,13 +35,17 @@ import { z } from 'zod';
  * - At least one update field (newName or newStatus) is required
  *
  * **Error Handling**:
- * - Folder not found: Returns `{ success: false, error: "Folder not found: <identifier>" }`
- * - Multiple name matches: Returns disambiguation error with `code: 'DISAMBIGUATION_REQUIRED'`
- * - Empty newName (after trim): Zod validation error
+ * - Folder not found (by ID): `"Invalid id '[id]': folder not found"`
+ * - Folder not found (by name): `"Invalid name '[name]': folder not found"`
+ * - Multiple name matches: `"Ambiguous name '[name]': found [count] matches"` with `code: 'DISAMBIGUATION_REQUIRED'`
+ * - Empty newName (after trim): `"newName must be a non-empty string if provided"`
+ * - Missing identifier: `"Either id or name must be provided to identify the folder"`
+ * - Missing update field: `"At least one of newName or newStatus must be provided"`
  *
  * @see spec.md clarification #4 for case-sensitive matching
  * @see spec.md clarification #17 for trim behavior
  * @see spec.md clarification #34 for disambiguation error format
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const EditFolderInputSchema = z
   .object({
@@ -103,14 +107,18 @@ export const EditFolderSuccessSchema = z.object({
  * Standard Error Response
  *
  * **Possible Error Scenarios**:
- * - Folder not found: "Folder not found: <identifier>"
- * - Empty newName after trim: Zod validation error
+ * - Folder not found (by ID): `"Invalid id '[id]': folder not found"`
+ * - Folder not found (by name): `"Invalid name '[name]': folder not found"`
+ * - Empty newName after trim: `"newName must be a non-empty string if provided"`
+ * - Missing identifier: `"Either id or name must be provided to identify the folder"`
+ * - Missing update field: `"At least one of newName or newStatus must be provided"`
  *
  * @see spec.md clarification #9 for standard error format
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const EditFolderErrorSchema = z.object({
   success: z.literal(false),
-  error: z.string().describe('Human-readable error message')
+  error: z.string().describe('Human-readable error message following format standards')
 });
 
 /**

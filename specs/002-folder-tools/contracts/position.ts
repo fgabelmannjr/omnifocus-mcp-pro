@@ -36,10 +36,15 @@ import { z } from 'zod';
  * | `{ placement: "after", relativeTo: "id" }`        | `Folder.byIdentifier("id").after`            |
  *
  * **Error Handling**:
- * - Invalid `relativeTo` (folder not found): Returns `{ success: false, error: "Folder not found: <id>" }`
- * - Missing `relativeTo` for before/after: Zod validation error
+ * - Missing `relativeTo` for before/after: `"relativeTo is required when placement is 'before' or 'after'"`
+ * - Invalid `relativeTo` (folder not found): `"Invalid relativeTo '[id]': folder not found"`
+ * - Invalid `relativeTo` (wrong parent for before/after): `"Invalid relativeTo '[id]': folder is not a sibling in target parent"`
+ *   This error occurs when using `before`/`after` placement and the `relativeTo` folder exists
+ *   but is not a sibling within the intended parent folder (e.g., trying to position before a
+ *   folder in a different part of the hierarchy).
  *
  * @see spec.md clarification #11 for invalid relativeTo error format
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const PositionSchema = z
   .object({

@@ -24,12 +24,20 @@ export { PositionSchema, type Position };
 /**
  * Input Schema for add_folder
  *
+ * **Disambiguation**:
+ * This tool does NOT support disambiguation because it creates new folders
+ * rather than looking up existing ones by name. Only tools that accept a `name`
+ * parameter for folder identification support disambiguation.
+ *
  * **Error Handling**:
- * - Empty name (after trim): Zod validation error with message
- * - Invalid relativeTo position: Returns `{ success: false, error: "Folder not found: <id>" }`
+ * - Empty name (after trim): `"Folder name is required and must be a non-empty string"`
+ * - Invalid relativeTo (not found): `"Invalid relativeTo '[id]': folder not found"`
+ * - Invalid relativeTo (wrong parent): `"Invalid relativeTo '[id]': folder is not a sibling in target parent"`
+ * - Missing relativeTo for before/after: `"relativeTo is required when placement is 'before' or 'after'"`
  *
  * @see spec.md clarification #17 for trim behavior
  * @see spec.md clarification #11 for invalid relativeTo error format
+ * @see data-model.md "Disambiguation Support by Tool" for disambiguation rules
  */
 export const AddFolderInputSchema = z.object({
   name: z
@@ -60,15 +68,18 @@ export const AddFolderSuccessSchema = z.object({
  * Error Response
  *
  * **Possible Error Scenarios**:
- * - Empty name after trim: Zod validation error
- * - Invalid relativeTo (folder not found): "Folder not found: <id>"
+ * - Empty name after trim: `"Folder name is required and must be a non-empty string"`
+ * - Invalid relativeTo (not found): `"Invalid relativeTo '[id]': folder not found"`
+ * - Invalid relativeTo (wrong parent): `"Invalid relativeTo '[id]': folder is not a sibling in target parent"`
+ * - Missing relativeTo for before/after: `"relativeTo is required when placement is 'before' or 'after'"`
  *
  * @see spec.md clarification #9 for standard error format
  * @see spec.md clarification #11 for invalid relativeTo error format
+ * @see data-model.md "Standard Error Messages by Scenario" for complete list
  */
 export const AddFolderErrorSchema = z.object({
   success: z.literal(false),
-  error: z.string().describe('Human-readable error message')
+  error: z.string().describe('Human-readable error message following format standards')
 });
 
 // Combined Response

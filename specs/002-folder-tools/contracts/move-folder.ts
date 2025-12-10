@@ -45,17 +45,20 @@ export { PositionSchema, type Position };
  * There is no default position - you must specify where to move the folder.
  *
  * **Error Handling**:
- * - Folder not found: Returns `{ success: false, error: "Folder not found: <identifier>" }`
- * - Multiple name matches: Returns disambiguation error with `code: 'DISAMBIGUATION_REQUIRED'`
- * - Invalid relativeTo: Returns `{ success: false, error: "Folder not found: <id>" }`
- * - Circular move: Returns `{ success: false, error: "Cannot move folder into its own descendants" }`
- * - Library root operation: Returns `{ success: false, error: "Cannot move library: not a valid folder target" }`
+ * - Folder not found (by ID): `"Invalid id '[id]': folder not found"`
+ * - Folder not found (by name): `"Invalid name '[name]': folder not found"`
+ * - Multiple name matches: `"Ambiguous name '[name]': found [count] matches"` with `code: 'DISAMBIGUATION_REQUIRED'`
+ * - Invalid relativeTo (not found): `"Invalid relativeTo '[id]': folder not found"`
+ * - Invalid relativeTo (wrong parent): `"Invalid relativeTo '[id]': folder is not a sibling in target parent"`
+ * - Circular move: `"Cannot move folder '[id]': target is a descendant of source"`
+ * - Library root operation: `"Cannot move library: not a valid folder target"`
+ * - Missing identifier: `"Either id or name must be provided to identify the folder"`
  *
  * @see spec.md clarification #4 for case-sensitive matching
  * @see spec.md clarification #11 for invalid relativeTo error format
  * @see spec.md clarification #28 for library root operation rejection
  * @see spec.md clarification #34 for disambiguation error format
- * @see data-model.md line 166 for circular move detection
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const MoveFolderInputSchema = z
   .object({
@@ -95,19 +98,23 @@ export const MoveFolderSuccessSchema = z.object({
  * Standard Error Response
  *
  * **Possible Error Scenarios**:
- * - Folder not found: "Folder not found: <identifier>"
- * - Invalid relativeTo: "Folder not found: <id>"
- * - Circular move: "Cannot move folder into its own descendants"
- * - Library root operation: "Cannot move library: not a valid folder target"
+ * - Folder not found (by ID): `"Invalid id '[id]': folder not found"`
+ * - Folder not found (by name): `"Invalid name '[name]': folder not found"`
+ * - Invalid relativeTo (not found): `"Invalid relativeTo '[id]': folder not found"`
+ * - Invalid relativeTo (wrong parent): `"Invalid relativeTo '[id]': folder is not a sibling in target parent"`
+ * - Circular move: `"Cannot move folder '[id]': target is a descendant of source"`
+ * - Library root operation: `"Cannot move library: not a valid folder target"`
+ * - Missing identifier: `"Either id or name must be provided to identify the folder"`
  *
  * @see spec.md clarification #9 for standard error format
  * @see spec.md clarification #11 for invalid relativeTo error
  * @see spec.md FR-025 for circular move prevention
  * @see spec.md clarification #28 for library root rejection
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const MoveFolderErrorSchema = z.object({
   success: z.literal(false),
-  error: z.string().describe('Human-readable error message')
+  error: z.string().describe('Human-readable error message following format standards')
 });
 
 /**

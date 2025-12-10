@@ -32,12 +32,20 @@ import { z } from 'zod';
  * target the library root. This mirrors Omni Automation's behavior where `null`
  * or omitting position creates at library root.
  *
+ * **Disambiguation**:
+ * This tool does NOT support disambiguation because it filters by `parentId`
+ * (an ID), not by name lookup. Only tools that accept a `name` parameter for
+ * folder identification support disambiguation.
+ *
  * **Error Handling**:
- * - Invalid parentId (folder not found): Returns `{ success: false, error: "Folder not found: <id>" }`
+ * - Invalid parentId: `"Invalid parentId '[id]': folder not found"`
+ * - Invalid status enum: Zod validation error (e.g., `"status: Invalid enum value"`)
+ * - Invalid includeChildren type: Zod validation error (e.g., `"includeChildren: Expected boolean"`)
  *
  * @see spec.md FR-006 for includeChildren behavior
  * @see spec.md clarification #8 for parentId null semantics
  * @see spec.md clarification #19 for invalid parentId error format
+ * @see data-model.md "Disambiguation Support by Tool" for disambiguation rules
  */
 export const ListFoldersInputSchema = z.object({
   status: z
@@ -89,13 +97,16 @@ export const ListFoldersSuccessSchema = z.object({
  * Error Response
  *
  * **Possible Error Scenarios**:
- * - Invalid parentId: "Folder not found: <id>"
+ * - Invalid parentId: `"Invalid parentId '[id]': folder not found"`
+ * - Zod validation errors: `"[field]: [validation message]"`
  *
  * @see spec.md clarification #9 for standard error format
+ * @see spec.md clarification #19 for invalid parentId error format
+ * @see data-model.md "Zod Validation Error Handling" for validation error format
  */
 export const ListFoldersErrorSchema = z.object({
   success: z.literal(false),
-  error: z.string().describe('Human-readable error message')
+  error: z.string().describe('Human-readable error message following format standards')
 });
 
 // Combined Response

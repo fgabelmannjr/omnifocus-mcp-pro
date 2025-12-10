@@ -30,13 +30,16 @@ import { z } from 'zod';
  * Name matching is case-sensitive (exact match required).
  *
  * **Error Handling**:
- * - Folder not found: Returns `{ success: false, error: "Folder not found: <identifier>" }`
- * - Multiple name matches: Returns disambiguation error with `code: 'DISAMBIGUATION_REQUIRED'`
- * - Library root operation: Returns `{ success: false, error: "Cannot delete library: not a valid folder target" }`
+ * - Folder not found (by ID): `"Invalid id '[id]': folder not found"`
+ * - Folder not found (by name): `"Invalid name '[name]': folder not found"`
+ * - Multiple name matches: `"Ambiguous name '[name]': found [count] matches"` with `code: 'DISAMBIGUATION_REQUIRED'`
+ * - Library root operation: `"Cannot delete library: not a valid folder target"`
+ * - Missing identifier: `"Either id or name must be provided to identify the folder"`
  *
  * @see spec.md clarification #4 for case-sensitive matching
  * @see spec.md clarification #28 for library root operation rejection
  * @see spec.md clarification #34 for disambiguation error format
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const RemoveFolderInputSchema = z
   .object({
@@ -70,15 +73,18 @@ export const RemoveFolderSuccessSchema = z.object({
  * Standard Error Response
  *
  * **Possible Error Scenarios**:
- * - Folder not found: "Folder not found: <identifier>"
- * - Library root operation: "Cannot delete library: not a valid folder target"
+ * - Folder not found (by ID): `"Invalid id '[id]': folder not found"`
+ * - Folder not found (by name): `"Invalid name '[name]': folder not found"`
+ * - Library root operation: `"Cannot delete library: not a valid folder target"`
+ * - Missing identifier: `"Either id or name must be provided to identify the folder"`
  *
  * @see spec.md clarification #9 for standard error format
  * @see spec.md clarification #28 for library root rejection
+ * @see data-model.md "Standard Error Messages by Scenario" for complete error list
  */
 export const RemoveFolderErrorSchema = z.object({
   success: z.literal(false),
-  error: z.string().describe('Human-readable error message')
+  error: z.string().describe('Human-readable error message following format standards')
 });
 
 /**
