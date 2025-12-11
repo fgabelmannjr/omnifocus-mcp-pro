@@ -207,6 +207,7 @@ Domain-specific rules in `.claude/rules/` load automatically:
 - You've tested OmniJS scripts independently
 
 ## Recent Changes
+
 - 003-tasks: Added TypeScript 5.9+ with strict mode (`ES2024` target)
 
 - **Phase 2 Tags**: Completed tag management tools (2025-12-11)
@@ -259,5 +260,6 @@ This requires refactoring from `McpServer` to the low-level `Server` class.
 See [MCP logging spec](https://modelcontextprotocol.io/specification/2025-06-18/server/utilities/logging).
 
 ## Active Technologies
+
 - TypeScript 5.9+ with strict mode (`ES2024` target) (003-tasks)
 - N/A (interfaces with OmniFocus via OmniJS execution) (003-tasks)
