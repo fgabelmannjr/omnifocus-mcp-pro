@@ -84,7 +84,7 @@
 
 ---
 
-## Phase 3: User Story 1 - View Folder Structure (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - View Folder Structure (Priority: P1) 🎯 MVP ✅ COMPLETE
 
 **Goal**: Enable AI assistants to list and view folder hierarchy from OmniFocus
 
@@ -94,33 +94,33 @@
 
 > **TDD RULE: Write these tests FIRST. Verify they FAIL before any implementation.**
 
-- [ ] T015 [P] [US1] Write contract test tests/contract/listFolders.test.ts for ListFoldersInputSchema → verify FAILS
-- [ ] T016 [P] [US1] Write unit test tests/unit/listFolders.test.ts for listFolders primitive → verify FAILS
-- [ ] T016a [P] [US1] Write unit test for invalid parentId error handling (edge case: "Invalid parentId 'xyz': folder not found") → verify FAILS
+- [x] T015 [P] [US1] Write contract test tests/contract/listFolders.test.ts for ListFoldersInputSchema → verify FAILS ✓
+- [x] T016 [P] [US1] Write unit test tests/unit/listFolders.test.ts for listFolders primitive → verify FAILS ✓
+- [x] T016a [P] [US1] Write unit test for invalid parentId error handling (edge case: "Invalid parentId 'xyz': folder not found") → verify FAILS ✓
 
 ### 🟢 GREEN Phase - Implementation
 
 > **TDD RULE: Write MINIMUM code to make tests pass. No extras.**
 
-- [ ] T017 [P] [US1] Create primitive src/tools/primitives/listFolders.ts with OmniJS script generation → tests GREEN
-- [ ] T018 [P] [US1] Create definition src/tools/definitions/listFolders.ts with Zod schema and handler
-- [ ] T019 [US1] Register list_folders tool in src/server.ts
-- [ ] T020 [US1] Implement status filter (`active`/`dropped`) in listFolders primitive
-- [ ] T021 [US1] Implement parentId filter in listFolders primitive
-- [ ] T022 [US1] Implement includeChildren parameter (flattenedFolders vs folders) in listFolders primitive
+- [x] T017 [P] [US1] Create primitive src/tools/primitives/listFolders.ts with OmniJS script generation → tests GREEN ✓
+- [x] T018 [P] [US1] Create definition src/tools/definitions/listFolders.ts with Zod schema and handler ✓
+- [x] T019 [US1] Register list_folders tool in src/server.ts ✓
+- [x] T020 [US1] Implement status filter (`active`/`dropped`) in listFolders primitive ✓
+- [x] T021 [US1] Implement parentId filter in listFolders primitive ✓
+- [x] T022 [US1] Implement includeChildren parameter (flattenedFolders vs folders) in listFolders primitive ✓
 
 ### 🔵 REFACTOR Phase - Polish
 
 > **TDD RULE: Improve code quality. Tests MUST stay GREEN.**
 
-- [ ] T023 [US1] Refactor if needed while keeping tests green
+- [x] T023 [US1] Refactor if needed while keeping tests green ✓
 - [ ] T024 [US1] Verify list_folders in OmniFocus Script Editor (manual test)
 
-**Checkpoint**: User Story 1 complete - `list_folders` tool functional and tested
+**Checkpoint**: User Story 1 complete - `list_folders` tool functional and tested ✅
 
 ---
 
-## Phase 4: User Story 2 - Create New Folders (Priority: P2)
+## Phase 4: User Story 2 - Create New Folders (Priority: P2) ✅ COMPLETE
 
 **Goal**: Enable AI assistants to create folders at specified positions in the hierarchy
 
@@ -128,30 +128,30 @@
 
 ### 🔴 RED Phase - Tests First (REQUIRED)
 
-- [ ] T025 [P] [US2] Write contract test tests/contract/addFolder.test.ts for AddFolderInputSchema → verify FAILS
-- [ ] T026 [P] [US2] Write unit test tests/unit/addFolder.test.ts for addFolder primitive with position scenarios → verify FAILS
-- [ ] T026a [P] [US2] Write unit test for special characters in folder names (edge case: quotes, slashes, Unicode, emoji) → verify FAILS
+- [x] T025 [P] [US2] Write contract test tests/contract/addFolder.test.ts for AddFolderInputSchema → verify FAILS ✓
+- [x] T026 [P] [US2] Write unit test tests/unit/addFolder.test.ts for addFolder primitive with position scenarios → verify FAILS ✓
+- [x] T026a [P] [US2] Write unit test for special characters in folder names (edge case: quotes, slashes, Unicode, emoji) → verify FAILS ✓
 
 ### 🟢 GREEN Phase - Implementation
 
-- [ ] T027 [P] [US2] Create primitive src/tools/primitives/addFolder.ts with OmniJS script generation → tests GREEN
-- [ ] T028 [P] [US2] Create definition src/tools/definitions/addFolder.ts with Zod schema and handler
-- [ ] T029 [US2] Register add_folder tool in src/server.ts
-- [ ] T030 [US2] Implement position resolution (beginning/ending/before/after) in addFolder primitive
-- [ ] T031 [US2] Implement relativeTo validation (folder exists, correct parent for before/after)
-- [ ] T032 [US2] Implement default position handling (library.ending when position omitted)
-- [ ] T033 [US2] Implement name trimming and validation (non-empty after trim)
+- [x] T027 [P] [US2] Create primitive src/tools/primitives/addFolder.ts with OmniJS script generation → tests GREEN ✓
+- [x] T028 [P] [US2] Create definition src/tools/definitions/addFolder.ts with Zod schema and handler ✓
+- [x] T029 [US2] Register add_folder tool in src/server.ts ✓
+- [x] T030 [US2] Implement position resolution (beginning/ending/before/after) in addFolder primitive ✓
+- [x] T031 [US2] Implement relativeTo validation (folder exists, correct parent for before/after) ✓
+- [x] T032 [US2] Implement default position handling (library.ending when position omitted) ✓
+- [x] T033 [US2] Implement name trimming and validation (non-empty after trim) ✓
 
 ### 🔵 REFACTOR Phase - Polish
 
-- [ ] T034 [US2] Refactor if needed while keeping tests green
+- [x] T034 [US2] Refactor if needed while keeping tests green ✓
 - [ ] T035 [US2] Verify add_folder in OmniFocus Script Editor (manual test)
 
-**Checkpoint**: User Story 2 complete - `add_folder` tool functional and tested
+**Checkpoint**: User Story 2 complete - `add_folder` tool functional and tested ✅
 
 ---
 
-## Phase 5: User Story 3 - Edit Folder Properties (Priority: P3)
+## Phase 5: User Story 3 - Edit Folder Properties (Priority: P3) ✅ COMPLETE
 
 **Goal**: Enable AI assistants to rename folders and change their status
 
@@ -159,31 +159,31 @@
 
 ### 🔴 RED Phase - Tests First (REQUIRED)
 
-- [ ] T036 [P] [US3] Write contract test tests/contract/editFolder.test.ts for EditFolderInputSchema → verify FAILS
-- [ ] T037 [P] [US3] Write unit test tests/unit/editFolder.test.ts with disambiguation scenarios → verify FAILS
+- [x] T036 [P] [US3] Write contract test tests/contract/editFolder.test.ts for EditFolderInputSchema → verify FAILS ✓
+- [x] T037 [P] [US3] Write unit test tests/unit/editFolder.test.ts with disambiguation scenarios → verify FAILS ✓
 
 ### 🟢 GREEN Phase - Implementation
 
-- [ ] T038 [P] [US3] Create primitive src/tools/primitives/editFolder.ts with OmniJS script generation → tests GREEN
-- [ ] T039 [P] [US3] Create definition src/tools/definitions/editFolder.ts with Zod schema and handler
-- [ ] T040 [US3] Register edit_folder tool in src/server.ts
-- [ ] T041 [US3] Implement folder lookup by ID (Folder.byIdentifier)
-- [ ] T042 [US3] Implement folder lookup by name with disambiguation (flattenedFolders.filter)
-- [ ] T043 [US3] Implement disambiguation error response with matchingIds array (code: DISAMBIGUATION_REQUIRED)
-- [ ] T044 [US3] Implement partial update for newName (folder.name assignment)
-- [ ] T045 [US3] Implement partial update for newStatus (folder.status assignment)
-- [ ] T046 [US3] Implement validation requiring at least one of newName or newStatus
+- [x] T038 [P] [US3] Create primitive src/tools/primitives/editFolder.ts with OmniJS script generation → tests GREEN ✓
+- [x] T039 [P] [US3] Create definition src/tools/definitions/editFolder.ts with Zod schema and handler ✓
+- [x] T040 [US3] Register edit_folder tool in src/server.ts ✓
+- [x] T041 [US3] Implement folder lookup by ID (Folder.byIdentifier) ✓
+- [x] T042 [US3] Implement folder lookup by name with disambiguation (flattenedFolders.filter) ✓
+- [x] T043 [US3] Implement disambiguation error response with matchingIds array (code: DISAMBIGUATION_REQUIRED) ✓
+- [x] T044 [US3] Implement partial update for newName (folder.name assignment) ✓
+- [x] T045 [US3] Implement partial update for newStatus (folder.status assignment) ✓
+- [x] T046 [US3] Implement validation requiring at least one of newName or newStatus ✓
 
 ### 🔵 REFACTOR Phase - Polish
 
-- [ ] T047 [US3] Refactor if needed while keeping tests green
+- [x] T047 [US3] Refactor if needed while keeping tests green ✓
 - [ ] T048 [US3] Verify edit_folder in OmniFocus Script Editor (manual test)
 
-**Checkpoint**: User Story 3 complete - `edit_folder` tool functional with disambiguation support
+**Checkpoint**: User Story 3 complete - `edit_folder` tool functional with disambiguation support ✅
 
 ---
 
-## Phase 6: User Story 4 - Delete Folders (Priority: P4)
+## Phase 6: User Story 4 - Delete Folders (Priority: P4) ✅ COMPLETE
 
 **Goal**: Enable AI assistants to delete folders (with all contents recursively)
 
@@ -191,30 +191,30 @@
 
 ### 🔴 RED Phase - Tests First (REQUIRED)
 
-- [ ] T049 [P] [US4] Write contract test tests/contract/removeFolder.test.ts for RemoveFolderInputSchema → verify FAILS
-- [ ] T050 [P] [US4] Write unit test tests/unit/removeFolder.test.ts → verify FAILS
-- [ ] T050a [P] [US4] Write unit test for library deletion rejection (edge case: "Cannot delete/move library: not a valid folder target") → verify FAILS
+- [x] T049 [P] [US4] Write contract test tests/contract/removeFolder.test.ts for RemoveFolderInputSchema → verify FAILS ✓
+- [x] T050 [P] [US4] Write unit test tests/unit/removeFolder.test.ts → verify FAILS ✓
+- [x] T050a [P] [US4] Write unit test for library deletion rejection (edge case: "Cannot delete/move library: not a valid folder target") → verify FAILS ✓
 
 ### 🟢 GREEN Phase - Implementation
 
-- [ ] T051 [P] [US4] Create primitive src/tools/primitives/removeFolder.ts with OmniJS script generation → tests GREEN
-- [ ] T052 [P] [US4] Create definition src/tools/definitions/removeFolder.ts with Zod schema and handler
-- [ ] T053 [US4] Register remove_folder tool in src/server.ts
-- [ ] T054 [US4] Implement folder lookup by ID or name (reuse pattern from editFolder)
-- [ ] T055 [US4] Implement disambiguation error response for name lookups
-- [ ] T056 [US4] Implement deleteObject(folder) call in OmniJS
-- [ ] T057 [US4] Capture folder ID and name before deletion for response
+- [x] T051 [P] [US4] Create primitive src/tools/primitives/removeFolder.ts with OmniJS script generation → tests GREEN ✓
+- [x] T052 [P] [US4] Create definition src/tools/definitions/removeFolder.ts with Zod schema and handler ✓
+- [x] T053 [US4] Register remove_folder tool in src/server.ts ✓
+- [x] T054 [US4] Implement folder lookup by ID or name (reuse pattern from editFolder) ✓
+- [x] T055 [US4] Implement disambiguation error response for name lookups ✓
+- [x] T056 [US4] Implement deleteObject(folder) call in OmniJS ✓
+- [x] T057 [US4] Capture folder ID and name before deletion for response ✓
 
 ### 🔵 REFACTOR Phase - Polish
 
-- [ ] T058 [US4] Refactor if needed while keeping tests green
+- [x] T058 [US4] Refactor if needed while keeping tests green ✓
 - [ ] T059 [US4] Verify remove_folder in OmniFocus Script Editor (manual test)
 
-**Checkpoint**: User Story 4 complete - `remove_folder` tool functional with recursive deletion
+**Checkpoint**: User Story 4 complete - `remove_folder` tool functional with recursive deletion ✅
 
 ---
 
-## Phase 7: User Story 5 - Move Folders (Priority: P5)
+## Phase 7: User Story 5 - Move Folders (Priority: P5) ✅ COMPLETE
 
 **Goal**: Enable AI assistants to reorganize folder hierarchy by moving folders
 
@@ -222,27 +222,27 @@
 
 ### 🔴 RED Phase - Tests First (REQUIRED)
 
-- [ ] T060 [P] [US5] Write contract test tests/contract/moveFolder.test.ts for MoveFolderInputSchema → verify FAILS
-- [ ] T061 [P] [US5] Write unit test tests/unit/moveFolder.test.ts with circular detection scenarios → verify FAILS
-- [ ] T061a [P] [US5] Write unit test for library move rejection (edge case: "Cannot delete/move library: not a valid folder target") → verify FAILS
+- [x] T060 [P] [US5] Write contract test tests/contract/moveFolder.test.ts for MoveFolderInputSchema → verify FAILS ✓
+- [x] T061 [P] [US5] Write unit test tests/unit/moveFolder.test.ts with circular detection scenarios → verify FAILS ✓
+- [x] T061a [P] [US5] Write unit test for library move rejection (edge case: "Cannot delete/move library: not a valid folder target") → verify FAILS ✓
 
 ### 🟢 GREEN Phase - Implementation
 
-- [ ] T062 [P] [US5] Create primitive src/tools/primitives/moveFolder.ts with OmniJS script generation → tests GREEN
-- [ ] T063 [P] [US5] Create definition src/tools/definitions/moveFolder.ts with Zod schema and handler
-- [ ] T064 [US5] Register move_folder tool in src/server.ts
-- [ ] T065 [US5] Implement folder lookup by ID or name (reuse pattern from editFolder)
-- [ ] T066 [US5] Implement disambiguation error response for name lookups
-- [ ] T067 [US5] Implement position resolution for moveSections (beginning/ending/before/after)
-- [ ] T068 [US5] Implement circular move detection (cannot move folder into its own descendant)
-- [ ] T069 [US5] Implement moveSections([folder], position) call in OmniJS
+- [x] T062 [P] [US5] Create primitive src/tools/primitives/moveFolder.ts with OmniJS script generation → tests GREEN ✓
+- [x] T063 [P] [US5] Create definition src/tools/definitions/moveFolder.ts with Zod schema and handler ✓
+- [x] T064 [US5] Register move_folder tool in src/server.ts ✓
+- [x] T065 [US5] Implement folder lookup by ID or name (reuse pattern from editFolder) ✓
+- [x] T066 [US5] Implement disambiguation error response for name lookups ✓
+- [x] T067 [US5] Implement position resolution for moveSections (beginning/ending/before/after) ✓
+- [x] T068 [US5] Implement circular move detection (cannot move folder into its own descendant) ✓
+- [x] T069 [US5] Implement moveSections([folder], position) call in OmniJS ✓
 
 ### 🔵 REFACTOR Phase - Polish
 
-- [ ] T070 [US5] Refactor if needed while keeping tests green
+- [x] T070 [US5] Refactor if needed while keeping tests green ✓
 - [ ] T071 [US5] Verify move_folder in OmniFocus Script Editor (manual test)
 
-**Checkpoint**: User Story 5 complete - `move_folder` tool functional with circular detection
+**Checkpoint**: User Story 5 complete - `move_folder` tool functional with circular detection ✅
 
 ---
 
