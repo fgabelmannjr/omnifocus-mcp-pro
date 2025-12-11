@@ -320,75 +320,6 @@ Parameters:
   - `name`: (Optional) The name of the item to remove
   - `itemType`: The type of item ('task' or 'project')
 
-### `list_tags`
-
-List tags from the OmniFocus database with optional filtering.
-
-Parameters:
-
-- `status`: (Optional) Filter by tag status ('active' or 'dropped')
-- `parentId`: (Optional) Filter to children of a specific tag ID
-- `includeChildren`: (Optional) Include all nested descendants (default: false)
-
-Returns:
-
-- Array of tags with id, name, status, parentId, allowsNextAction, and taskCount
-
-### `create_tag`
-
-Create a new tag in OmniFocus.
-
-Parameters:
-
-- `name`: The name of the new tag (required)
-- `parentId`: (Optional) Parent tag ID for nested tags
-- `parentName`: (Optional) Parent tag name (used if parentId not provided)
-- `allowsNextAction`: (Optional) Whether tasks with this tag can be next actions (default: true)
-
-### `edit_tag`
-
-Edit tag properties in OmniFocus.
-
-Parameters:
-
-- `id`: (Optional) The tag's unique identifier
-- `name`: (Optional) The tag's name (used if id not provided)
-- `updates`: Object containing properties to change:
-  - `name`: (Optional) New name for the tag
-  - `allowsNextAction`: (Optional) Whether tasks can be next actions
-  - `status`: (Optional) New status ('active' or 'dropped')
-
-### `delete_tag`
-
-Remove a tag from OmniFocus.
-
-Parameters:
-
-- `id`: (Optional) The tag's unique identifier
-- `name`: (Optional) The tag's name (used if id not provided)
-
-### `assign_tags`
-
-Assign tags to one or more tasks.
-
-Parameters:
-
-- `taskIds`: Array of task IDs to assign tags to
-- `tagIds`: (Optional) Array of tag IDs to assign
-- `tagNames`: (Optional) Array of tag names to assign
-- `mode`: (Optional) 'add' to append tags, 'replace' to clear existing first (default: 'add')
-
-### `remove_tags`
-
-Remove tags from one or more tasks.
-
-Parameters:
-
-- `taskIds`: Array of task IDs to remove tags from
-- `tagIds`: (Optional) Array of specific tag IDs to remove
-- `tagNames`: (Optional) Array of specific tag names to remove
-- `removeAll`: (Optional) If true, removes all tags from the tasks
-
 ### `list_perspectives` ⭐ NEW
 
 List all available perspectives in OmniFocus, including built-in and
@@ -587,7 +518,7 @@ Returns:
 
 ## Development
 
-### Prerequisites
+### Development Prerequisites
 
 - **Node.js 24+** required
 - **pnpm** recommended (npm/yarn also work)

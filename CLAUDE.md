@@ -196,6 +196,7 @@ Domain-specific rules in `.claude/rules/` load automatically:
 - You've tested OmniJS scripts independently
 
 ## Recent Changes
+- 003-tasks: Added TypeScript 5.9+ with strict mode (`ES2024` target)
 
 - **Phase 2 Tags**: Completed tag management tools (2025-12-11)
   - `list_tags`, `create_tag`, `edit_tag`, `delete_tag`, `assign_tags`, `remove_tags`
@@ -207,12 +208,9 @@ Domain-specific rules in `.claude/rules/` load automatically:
   - `list_folders`, `add_folder`, `edit_folder`, `remove_folder`, `move_folder`
   - All primitives use pure Omni Automation JavaScript (OmniJS)
   - Established OmniJS-first architecture pattern for future tools
-- **Constitution v2.0.0**: Migrated to pure OmniJS execution model
   - Removed AppleScript tier (Tier 1) - all write operations now use OmniJS
   - Removed direct JXA tier (Tier 3) - unused execution path eliminated
   - All operations (read AND write) now use consistent OmniJS execution
-- **Phase 0.5 SDK Upgrade**: Upgraded to MCP SDK 1.24.3 and Zod 4.x
-- **Phase 0 Tooling**: Migrated to tsup, Vitest, Biome, Node 24+
 
 ## Logging
 
@@ -248,3 +246,7 @@ stdout as JSON-RPC, while diagnostic logs stay on stderr.
 Phase 20 will migrate to `server.sendLoggingMessage()` for client-visible logs.
 This requires refactoring from `McpServer` to the low-level `Server` class.
 See [MCP logging spec](https://modelcontextprotocol.io/specification/2025-06-18/server/utilities/logging).
+
+## Active Technologies
+- TypeScript 5.9+ with strict mode (`ES2024` target) (003-tasks)
+- N/A (interfaces with OmniFocus via OmniJS execution) (003-tasks)
