@@ -22,8 +22,9 @@ export async function listTasks(params: ListTasksInput): Promise<ListTasksRespon
 
 /**
  * Generate OmniJS script to list tasks with filtering.
+ * Exported for manual testing in OmniFocus Script Editor.
  */
-function generateListTasksScript(params: ListTasksInput): string {
+export function generateListTasksScript(params: ListTasksInput): string {
   const {
     projectId,
     projectName,

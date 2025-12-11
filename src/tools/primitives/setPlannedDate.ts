@@ -27,8 +27,9 @@ export async function setPlannedDate(params: SetPlannedDateInput): Promise<SetPl
 
 /**
  * Generate OmniJS script to set or clear a task's planned date.
+ * Exported for manual testing in OmniFocus Script Editor.
  */
-function generateSetPlannedDateScript(params: SetPlannedDateInput): string {
+export function generateSetPlannedDateScript(params: SetPlannedDateInput): string {
   const { id, name, plannedDate } = params;
 
   // Escape strings for safe embedding in JS
@@ -38,16 +39,12 @@ function generateSetPlannedDateScript(params: SetPlannedDateInput): string {
 
   return `(function() {
   try {
-    // Check OmniFocus version
-    var version = app.version;
-    var versionParts = version.split('.');
-    var major = parseInt(versionParts[0]);
-    var minor = parseInt(versionParts[1] || '0');
-
-    if (major < 4 || (major === 4 && minor < 7)) {
+    // Check OmniFocus version using userVersion (app.version is deprecated)
+    var userVersion = app.userVersion;
+    if (!userVersion.atLeast(new Version('4.7'))) {
       return JSON.stringify({
         success: false,
-        error: 'Planned date requires OmniFocus v4.7 or later'
+        error: 'Planned date requires OmniFocus v4.7 or later. Current version: ' + userVersion.versionString
       });
     }
 

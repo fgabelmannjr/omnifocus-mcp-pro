@@ -25,8 +25,9 @@ export async function appendNote(params: AppendNoteInput): Promise<AppendNoteRes
 
 /**
  * Generate OmniJS script to append note to a task.
+ * Exported for manual testing in OmniFocus Script Editor.
  */
-function generateAppendNoteScript(params: AppendNoteInput): string {
+export function generateAppendNoteScript(params: AppendNoteInput): string {
   const { id, name, text } = params;
 
   // Escape strings for safe embedding in JS

@@ -22,8 +22,9 @@ export async function getTask(params: GetTaskInput): Promise<GetTaskResponse> {
 
 /**
  * Generate OmniJS script to get a task by ID or name.
+ * Exported for manual testing in OmniFocus Script Editor.
  */
-function generateGetTaskScript(params: GetTaskInput): string {
+export function generateGetTaskScript(params: GetTaskInput): string {
   const { id, name } = params;
 
   // Escape strings for safe embedding in JS
