@@ -347,13 +347,26 @@ export async function editItem(params: EditItemParams): Promise<{
       };
     }
 
-    return {
-      success: result.success,
-      id: result.id,
-      name: result.name,
-      changedProperties: result.changedProperties,
-      error: result.error
+    // Build success response, only including defined properties
+    const response: {
+      success: boolean;
+      id?: string;
+      name?: string;
+      changedProperties?: string;
+      error?: string;
+    } = {
+      success: result.success
     };
+    if (result.id !== undefined) {
+      response.id = result.id;
+    }
+    if (result.name !== undefined) {
+      response.name = result.name;
+    }
+    if (result.changedProperties !== undefined) {
+      response.changedProperties = result.changedProperties;
+    }
+    return response;
   } catch (error: unknown) {
     console.error('Error in editItem:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

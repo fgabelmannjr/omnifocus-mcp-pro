@@ -136,12 +136,17 @@ export async function removeItem(
       };
     }
 
-    return {
-      success: result.success,
-      id: result.id,
-      name: result.name,
-      error: result.error
+    // Build success response, only including defined properties
+    const response: { success: boolean; id?: string; name?: string; error?: string } = {
+      success: result.success
     };
+    if (result.id !== undefined) {
+      response.id = result.id;
+    }
+    if (result.name !== undefined) {
+      response.name = result.name;
+    }
+    return response;
   } catch (error: unknown) {
     console.error('Error in removeItem:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

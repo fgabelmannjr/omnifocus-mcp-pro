@@ -1,18 +1,29 @@
-import type { Folder, ListFoldersInput } from '../../contracts/folder-tools/list-folders.js';
+import type { z } from 'zod';
+import type { Folder, ListFoldersInputSchema } from '../../contracts/folder-tools/list-folders.js';
 import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
 import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+
+// Use z.input for the parameter type (optional defaults) vs z.infer (required after defaults)
+type ListFoldersParams = z.input<typeof ListFoldersInputSchema>;
 
 /**
  * Response type for listFolders
  */
-export type ListFoldersResponse =
-  | { success: true; folders: Folder[] }
-  | { success: false; error: string };
+export type ListFoldersSuccessResponse = { success: true; folders: Folder[] };
+export type ListFoldersErrorResponse = { success: false; error: string };
+export type ListFoldersResponse = ListFoldersSuccessResponse | ListFoldersErrorResponse;
+
+/**
+ * Type guard to check if response is an error
+ */
+function isErrorResponse(response: ListFoldersResponse): response is ListFoldersErrorResponse {
+  return response.success === false;
+}
 
 /**
  * Generate Omni Automation JavaScript for listing folders
  */
-function generateOmniScript(params: ListFoldersInput): string {
+function generateOmniScript(params: ListFoldersParams): string {
   const { status, parentId, includeChildren = true } = params;
 
   // Escape strings for JavaScript
@@ -97,7 +108,7 @@ function generateOmniScript(params: ListFoldersInput): string {
  * @param params - Filter parameters (status, parentId, includeChildren)
  * @returns Promise with folders array or error
  */
-export async function listFolders(params: ListFoldersInput = {}): Promise<ListFoldersResponse> {
+export async function listFolders(params: ListFoldersParams = {}): Promise<ListFoldersResponse> {
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
@@ -108,15 +119,16 @@ export async function listFolders(params: ListFoldersInput = {}): Promise<ListFo
     // Execute via Omni Automation
     const result = (await executeOmniFocusScript(tempFile.path)) as ListFoldersResponse;
 
-    if (!result.success) {
+    // Use type guard for proper narrowing
+    if (isErrorResponse(result)) {
       return {
-        success: false,
+        success: false as const,
         error: result.error
       };
     }
 
     return {
-      success: true,
+      success: true as const,
       folders: result.folders
     };
   } catch (error: unknown) {

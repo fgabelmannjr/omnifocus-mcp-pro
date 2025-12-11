@@ -104,18 +104,8 @@ export async function addFolder(params: AddFolderInput): Promise<AddFolderRespon
     // Execute via Omni Automation
     const result = (await executeOmniFocusScript(tempFile.path)) as AddFolderResponse;
 
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error
-      };
-    }
-
-    return {
-      success: true,
-      id: result.id,
-      name: result.name
-    };
+    // Pass through the result (success, or error)
+    return result;
   } catch (error: unknown) {
     console.error('Error in addFolder:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

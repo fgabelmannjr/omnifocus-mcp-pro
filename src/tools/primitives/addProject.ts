@@ -143,11 +143,14 @@ export async function addProject(
       };
     }
 
-    return {
-      success: result.success,
-      projectId: result.projectId,
-      error: result.error
+    // Build success response, only including defined properties
+    const response: { success: boolean; projectId?: string; error?: string } = {
+      success: result.success
     };
+    if (result.projectId !== undefined) {
+      response.projectId = result.projectId;
+    }
+    return response;
   } catch (error: unknown) {
     console.error('Error in addProject:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

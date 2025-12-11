@@ -191,12 +191,22 @@ export async function addOmniFocusTask(params: AddOmniFocusTaskParams): Promise<
       };
     }
 
-    return {
-      success: result.success,
-      taskId: result.taskId,
-      error: result.error,
-      placement: result.placement
+    // Build success response, only including defined properties
+    const response: {
+      success: boolean;
+      taskId?: string;
+      error?: string;
+      placement?: 'parent' | 'project' | 'inbox';
+    } = {
+      success: result.success
     };
+    if (result.taskId !== undefined) {
+      response.taskId = result.taskId;
+    }
+    if (result.placement !== undefined) {
+      response.placement = result.placement;
+    }
+    return response;
   } catch (error: unknown) {
     console.error('Error in addOmniFocusTask:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

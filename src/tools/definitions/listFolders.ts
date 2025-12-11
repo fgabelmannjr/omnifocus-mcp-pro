@@ -20,7 +20,7 @@ export async function handler(params: unknown) {
           type: 'text' as const,
           text: JSON.stringify({
             success: false,
-            error: parseResult.error.errors
+            error: parseResult.error.issues
               .map((e) => `${e.path.join('.')}: ${e.message}`)
               .join(', ')
           })
