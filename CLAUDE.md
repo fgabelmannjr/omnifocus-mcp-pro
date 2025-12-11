@@ -210,6 +210,15 @@ Domain-specific rules in `.claude/rules/` load automatically:
 
 - 003-tasks: Added TypeScript 5.9+ with strict mode (`ES2024` target)
 
+- **Phase 3 Tasks (Enhanced)**: Completed enhanced task management tools (2025-12-11)
+  - `list_tasks`: Comprehensive task filtering (project, folder, tags, status, dates)
+  - `get_task`: Full task details by ID or name with disambiguation
+  - `set_planned_date`: Set/clear planned dates (OmniFocus v4.7+ feature)
+  - `append_note`: Append text to task notes without overwriting
+  - Contracts in `src/contracts/task-tools/` with shared schemas
+  - Full TDD implementation with 325+ tests (contract + unit)
+  - Server-side OmniJS filtering for performance
+
 - **Phase 2 Tags**: Completed tag management tools (2025-12-11)
   - `list_tags`, `create_tag`, `edit_tag`, `delete_tag`, `assign_tags`, `remove_tags`
   - Full hierarchy support with parent/child relationships

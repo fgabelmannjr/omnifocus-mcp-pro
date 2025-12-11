@@ -67,11 +67,11 @@ Phase 7: Polish & Cross-Cutting
 
 ### Tasks
 
-- [ ] T001 Create directory structure `src/contracts/task-tools/` and `src/contracts/task-tools/shared/`
+- [X] T001 Create directory structure `src/contracts/task-tools/` and `src/contracts/task-tools/shared/`
   - **Effort**: XS
   - **Acceptance**: Directories exist
 
-- [ ] T002 Copy contracts from `specs/003-tasks/contracts/` to `src/contracts/task-tools/`
+- [X] T002 Copy contracts from `specs/003-tasks/contracts/` to `src/contracts/task-tools/`
   - **Files to copy**:
     - `specs/003-tasks/contracts/index.ts` to `src/contracts/task-tools/index.ts`
     - `specs/003-tasks/contracts/list-tasks.ts` to `src/contracts/task-tools/list-tasks.ts`
@@ -84,7 +84,7 @@ Phase 7: Polish & Cross-Cutting
   - **Effort**: S
   - **Acceptance**: All contract files copied with correct imports
 
-- [ ] T003 Run `pnpm build` and `pnpm typecheck` to verify contracts compile
+- [X] T003 Run `pnpm build` and `pnpm typecheck` to verify contracts compile
   - **Effort**: XS
   - **Acceptance**: Build succeeds with no type errors
 
@@ -98,7 +98,7 @@ Phase 7: Polish & Cross-Cutting
 
 ### Tasks
 
-- [ ] T004 [P] Write contract tests for shared schemas in `tests/contract/task-tools/shared-schemas.test.ts`
+- [X] T004 [P] Write contract tests for shared schemas in `tests/contract/task-tools/shared-schemas.test.ts`
   - **Description**: Test TaskStatusSchema, TaskSummarySchema, TaskFullSchema, EntityReferenceSchema, DisambiguationErrorSchema
   - **Dependencies**: T003
   - **Effort**: M
@@ -113,7 +113,7 @@ Phase 7: Polish & Cross-Cutting
     - [ ] Run `pnpm test tests/contract/task-tools/shared-schemas.test.ts` → tests PASS (contracts already exist in specs/003-tasks/contracts/)
   - **Note**: Contract tests validate Zod schema structure and SHOULD PASS because the schemas already exist. Unit tests (T007+) validate primitive implementation and SHOULD FAIL first per TDD.
 
-- [ ] T005 [P] Create test directory structure for task-tools
+- [X] T005 [P] Create test directory structure for task-tools
   - **Description**: Create `tests/contract/task-tools/` and `tests/unit/task-tools/` directories
   - **Dependencies**: T003
   - **Effort**: XS
@@ -142,30 +142,30 @@ Phase 7: Polish & Cross-Cutting
 
 ### RED Phase - Tests First
 
-- [ ] T006 [P] [US1] Write contract tests for list-tasks in `tests/contract/task-tools/list-tasks.test.ts` → verify PASS
+- [X] T006 [P] [US1] Write contract tests for list-tasks in `tests/contract/task-tools/list-tasks.test.ts` → verify PASS
   - **Dependencies**: T004, T005
   - **Effort**: M
   - **Files**:
     - `tests/contract/task-tools/list-tasks.test.ts` (create)
   - **Acceptance Criteria**:
-    - [ ] ListTasksInputSchema accepts empty input (all optional)
-    - [ ] ListTasksInputSchema accepts all filter combinations
-    - [ ] ListTasksInputSchema rejects invalid status values
-    - [ ] ListTasksInputSchema defaults: includeCompleted=false, tagFilterMode='any', limit=100, flatten=true
-    - [ ] ListTasksResponseSchema accepts success with tasks array
-    - [ ] ListTasksResponseSchema accepts error response
-    - [ ] Run `pnpm test tests/contract/task-tools/list-tasks.test.ts` → tests PASS (validating existing Zod schema structure)
+    - [X] ListTasksInputSchema accepts empty input (all optional)
+    - [X] ListTasksInputSchema accepts all filter combinations
+    - [X] ListTasksInputSchema rejects invalid status values
+    - [X] ListTasksInputSchema defaults: includeCompleted=false, tagFilterMode='any', limit=100, flatten=true
+    - [X] ListTasksResponseSchema accepts success with tasks array
+    - [X] ListTasksResponseSchema accepts error response
+    - [X] Run `pnpm test tests/contract/task-tools/list-tasks.test.ts` → tests PASS (validating existing Zod schema structure)
 
-- [ ] T007 [P] [US1] Write unit test: listTasks returns tasks on success in `tests/unit/task-tools/listTasks.test.ts` -> verify FAILS
+- [X] T007 [P] [US1] Write unit test: listTasks returns tasks on success in `tests/unit/task-tools/listTasks.test.ts` -> verify FAILS
   - **Dependencies**: T005
   - **Effort**: S
   - **Files**:
     - `tests/unit/task-tools/listTasks.test.ts` (create)
   - **Acceptance Criteria**:
-    - [ ] Test mocks executeOmniFocusScript
-    - [ ] Test calls listTasks({}) with mock response
-    - [ ] Test expects result.success === true and tasks array
-    - [ ] Run `pnpm test tests/unit/task-tools/listTasks.test.ts` -> test FAILS (primitive does not exist)
+    - [X] Test mocks executeOmniFocusScript
+    - [X] Test calls listTasks({}) with mock response
+    - [X] Test expects result.success === true and tasks array
+    - [X] Run `pnpm test tests/unit/task-tools/listTasks.test.ts` -> test FAILS (primitive does not exist)
 
 - [ ] T008 [P] [US1] Write unit test: listTasks filters by project in `tests/unit/task-tools/listTasks.test.ts` -> verify FAILS
   - **Dependencies**: T007
@@ -292,62 +292,62 @@ Phase 7: Polish & Cross-Cutting
 
 ### RED Phase - Tests First
 
-- [ ] T016 [P] [US2] Write contract tests for get-task in `tests/contract/task-tools/get-task.test.ts` -> verify PASS
+- [X] T016 [P] [US2] Write contract tests for get-task in `tests/contract/task-tools/get-task.test.ts` -> verify PASS
   - **Dependencies**: T004, T005
   - **Effort**: M
   - **Files**:
     - `tests/contract/task-tools/get-task.test.ts` (create)
   - **Acceptance Criteria**:
-    - [ ] GetTaskInputSchema requires at least one of id or name
-    - [ ] GetTaskInputSchema accepts id only
-    - [ ] GetTaskInputSchema accepts name only
-    - [ ] GetTaskInputSchema accepts both (id takes precedence)
-    - [ ] GetTaskResponseSchema accepts success with TaskFull
-    - [ ] GetTaskResponseSchema accepts error response
-    - [ ] GetTaskResponseSchema accepts disambiguation error
-    - [ ] Run `pnpm test tests/contract/task-tools/get-task.test.ts` -> tests PASS
+    - [X] GetTaskInputSchema requires at least one of id or name
+    - [X] GetTaskInputSchema accepts id only
+    - [X] GetTaskInputSchema accepts name only
+    - [X] GetTaskInputSchema accepts both (id takes precedence)
+    - [X] GetTaskResponseSchema accepts success with TaskFull
+    - [X] GetTaskResponseSchema accepts error response
+    - [X] GetTaskResponseSchema accepts disambiguation error
+    - [X] Run `pnpm test tests/contract/task-tools/get-task.test.ts` -> tests PASS
 
-- [ ] T017 [P] [US2] Write unit test: getTask returns task by ID in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
+- [X] T017 [P] [US2] Write unit test: getTask returns task by ID in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
   - **Dependencies**: T005
   - **Effort**: S
   - **Files**:
     - `tests/unit/task-tools/getTask.test.ts` (create)
   - **Acceptance Criteria**:
-    - [ ] Test mocks executeOmniFocusScript
-    - [ ] Test calls getTask({ id: 'task123' })
-    - [ ] Test expects TaskFull response with all properties
-    - [ ] Run `pnpm test tests/unit/task-tools/getTask.test.ts` -> test FAILS
+    - [X] Test mocks executeOmniFocusScript
+    - [X] Test calls getTask({ id: 'task123' })
+    - [X] Test expects TaskFull response with all properties
+    - [X] Run `pnpm test tests/unit/task-tools/getTask.test.ts` -> test FAILS
 
-- [ ] T018 [P] [US2] Write unit test: getTask returns task by name in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
+- [X] T018 [P] [US2] Write unit test: getTask returns task by name in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
   - **Dependencies**: T017
   - **Effort**: S
   - **Files**:
     - `tests/unit/task-tools/getTask.test.ts` (append)
   - **Acceptance Criteria**:
-    - [ ] Test calls getTask({ name: 'Call Mom' })
-    - [ ] Test expects TaskFull response
-    - [ ] Run `pnpm test` -> test FAILS
+    - [X] Test calls getTask({ name: 'Call Mom' })
+    - [X] Test expects TaskFull response
+    - [X] Run `pnpm test` -> test FAILS
 
-- [ ] T019 [P] [US2] Write unit test: getTask returns not found error in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
+- [X] T019 [P] [US2] Write unit test: getTask returns not found error in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
   - **Dependencies**: T017
   - **Effort**: S
   - **Files**:
     - `tests/unit/task-tools/getTask.test.ts` (append)
   - **Acceptance Criteria**:
-    - [ ] Test mocks null task response
-    - [ ] Test expects error: "Task 'task123' not found"
-    - [ ] Run `pnpm test` -> test FAILS
+    - [X] Test mocks null task response
+    - [X] Test expects error: "Task 'task123' not found"
+    - [X] Run `pnpm test` -> test FAILS
 
-- [ ] T020 [P] [US2] Write unit test: getTask returns disambiguation error in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
+- [X] T020 [P] [US2] Write unit test: getTask returns disambiguation error in `tests/unit/task-tools/getTask.test.ts` -> verify FAILS
   - **Dependencies**: T017
   - **Effort**: S
   - **Files**:
     - `tests/unit/task-tools/getTask.test.ts` (append)
   - **Acceptance Criteria**:
-    - [ ] Test mocks multiple tasks with same name
-    - [ ] Test expects code: 'DISAMBIGUATION_REQUIRED'
-    - [ ] Test expects matchingIds with 2+ entries
-    - [ ] Run `pnpm test` -> test FAILS
+    - [X] Test mocks multiple tasks with same name
+    - [X] Test expects code: 'DISAMBIGUATION_REQUIRED'
+    - [X] Test expects matchingIds with 2+ entries
+    - [X] Run `pnpm test` -> test FAILS
 
 ---
 
@@ -434,19 +434,19 @@ Phase 7: Polish & Cross-Cutting
 
 ### RED Phase - Tests First
 
-- [ ] T026 [P] [US3] Write contract tests for set-planned-date in `tests/contract/task-tools/set-planned-date.test.ts` -> verify PASS
+- [X] T026 [P] [US3] Write contract tests for set-planned-date in `tests/contract/task-tools/set-planned-date.test.ts` -> verify PASS
   - **Dependencies**: T004, T005
   - **Effort**: M
   - **Files**:
     - `tests/contract/task-tools/set-planned-date.test.ts` (create)
   - **Acceptance Criteria**:
-    - [ ] SetPlannedDateInputSchema requires at least one of id or name
-    - [ ] SetPlannedDateInputSchema accepts plannedDate as ISO 8601 string
-    - [ ] SetPlannedDateInputSchema accepts plannedDate as null (clear)
-    - [ ] SetPlannedDateResponseSchema accepts success with id and name
-    - [ ] SetPlannedDateResponseSchema accepts error response
-    - [ ] SetPlannedDateResponseSchema accepts disambiguation error
-    - [ ] Run `pnpm test tests/contract/task-tools/set-planned-date.test.ts` -> tests PASS
+    - [X] SetPlannedDateInputSchema requires at least one of id or name
+    - [X] SetPlannedDateInputSchema accepts plannedDate as ISO 8601 string
+    - [X] SetPlannedDateInputSchema accepts plannedDate as null (clear)
+    - [X] SetPlannedDateResponseSchema accepts success with id and name
+    - [X] SetPlannedDateResponseSchema accepts error response
+    - [X] SetPlannedDateResponseSchema accepts disambiguation error
+    - [X] Run `pnpm test tests/contract/task-tools/set-planned-date.test.ts` -> tests PASS
 
 - [ ] T027 [P] [US3] Write unit test: setPlannedDate sets date by ID in `tests/unit/task-tools/setPlannedDate.test.ts` -> verify FAILS
   - **Dependencies**: T005

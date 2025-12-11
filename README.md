@@ -30,7 +30,7 @@ implementation phases.
 | 0.5   | MCP SDK Upgrade to 1.24.x      | -     | Complete |
 | 1     | Folders                        | 5     | Complete |
 | 2     | Tags                           | 6     | Complete |
-| 3     | **Tasks (Enhanced)**           | 4     | Pending  |
+| 3     | **Tasks (Enhanced)**           | 4     | Complete |
 | 4     | **Projects**                   | 6     | Pending  |
 | 5     | **Review System**              | 3     | Pending  |
 | 6     | Notifications                  | 5     | Pending  |
@@ -515,6 +515,91 @@ Continues processing remaining tasks if one fails.
 Returns:
 
 - `results`: Array of per-task results with success/failure status
+
+### `list_tasks` ⭐ NEW
+
+List tasks from OmniFocus with comprehensive filtering options. Much more
+flexible than `query_omnifocus` for task-specific queries.
+
+Parameters:
+
+- `projectId`: (Optional) Filter to tasks in a specific project by ID
+- `projectName`: (Optional) Filter to tasks in a specific project by name
+- `folderId`: (Optional) Filter to tasks in projects within a folder
+- `folderName`: (Optional) Filter to tasks in projects within a folder by name
+- `tagIds`: (Optional) Filter to tasks with specific tags (array of tag IDs)
+- `tagFilterMode`: (Optional) How to combine tag filters: 'any' (OR) or 'all' (AND)
+- `status`: (Optional) Filter by task status array (e.g., ['Available', 'Blocked'])
+- `flagged`: (Optional) Filter to flagged tasks only
+- `includeCompleted`: (Optional) Include completed tasks (default: false)
+- `dueAfter`: (Optional) Tasks due after this date (ISO 8601)
+- `dueBefore`: (Optional) Tasks due before this date (ISO 8601)
+- `deferAfter`: (Optional) Tasks deferred after this date
+- `deferBefore`: (Optional) Tasks deferred before this date
+- `plannedAfter`: (Optional) Tasks with planned date after (v4.7+)
+- `plannedBefore`: (Optional) Tasks with planned date before (v4.7+)
+- `completedAfter`: (Optional) Tasks completed after this date
+- `completedBefore`: (Optional) Tasks completed before this date
+- `limit`: (Optional) Maximum number of tasks to return (default: 100)
+- `flatten`: (Optional) Return flat list vs hierarchy (default: true)
+
+Returns:
+
+- Array of task summaries with id, name, status, dates, flags, and relationships
+
+### `get_task` ⭐ NEW
+
+Get detailed information about a single task by ID or name. Returns the
+complete task object with all properties.
+
+Parameters:
+
+- `id`: (Optional) The task's unique identifier
+- `name`: (Optional) The task's name (used if id not provided)
+
+Note: At least one of `id` or `name` must be provided. Returns disambiguation
+error if multiple tasks match the name.
+
+Returns:
+
+- Complete task object with all properties including:
+  - Basic info: id, name, note, taskStatus
+  - Dates: dueDate, deferDate, plannedDate (v4.7+), completionDate
+  - Effective dates: effectiveDueDate, effectiveDeferDate, effectivePlannedDate
+  - Flags: flagged, effectiveFlagged, completed, sequential
+  - Relationships: containingProject, parent, tags
+  - Metadata: added, modified, estimatedMinutes, inInbox
+
+### `set_planned_date` ⭐ NEW
+
+Set or clear the planned date for a task. Planned dates are an OmniFocus v4.7+
+feature that allows scheduling tasks without using defer dates.
+
+Parameters:
+
+- `id`: (Optional) The task's unique identifier
+- `name`: (Optional) The task's name (used if id not provided)
+- `plannedDate`: ISO 8601 date string to set, or null to clear
+
+Note: Requires OmniFocus v4.7 or later. Returns version error on older versions.
+At least one of `id` or `name` must be provided. Returns disambiguation error
+if multiple tasks match the name.
+
+### `append_note` ⭐ NEW
+
+Append text to a task's existing note without overwriting. Useful for adding
+context, links, or updates to tasks.
+
+Parameters:
+
+- `id`: (Optional) The task's unique identifier
+- `name`: (Optional) The task's name (used if id not provided)
+- `text`: The text to append to the note (required)
+
+Note: If the task has an existing note, appends with a newline separator. If the
+note is empty, sets the note directly (no leading newline). At least one of
+`id` or `name` must be provided. Returns disambiguation error if multiple tasks
+match the name.
 
 ## Development
 
