@@ -70,7 +70,7 @@ reliability.
 | `src/tools/primitives/` | Core business logic |
 | `src/utils/omnifocusScripts/` | Pre-built OmniJS scripts |
 | `specs/` | Feature specifications |
-| `.claude/rules/` | Modular Claude rules |
+| `.claude/rules/` | Modular Claude rules (including RepoPrompt MCP guide) |
 
 ## Technology Stack
 
@@ -158,6 +158,7 @@ Domain-specific rules in `.claude/rules/` load automatically:
 - `error-handling.md` - Error patterns, partial failures
 - `git-workflow.md` - Commit conventions, PR rules
 - `research-workflow.md` - Research patterns and tools
+- `repoprompt-mcp.md` - RepoPrompt MCP context management and editing
 
 **Path-scoped (load when working with matching files):**
 
@@ -177,6 +178,16 @@ Domain-specific rules in `.claude/rules/` load automatically:
 - Call `think_about_task_adherence` before code edits
 - Use `write_memory` to preserve findings before context compaction
 - Prefer symbolic editing over file-based for precision
+
+## RepoPrompt MCP Usage Tips
+
+- Use `manage_selection` with absolute paths to curate context efficiently
+- Use `apply_edits` with `verbose=true` to see diffs before committing
+- Use `workspace_context` to check token counts before adding more files
+- Use `mode=codemap_only` for reference files you won't edit (saves tokens)
+- Use `slices` for large files - only include relevant line ranges
+- Use `chat_send` to delegate to specialized models (Planner, Engineer, etc.)
+- See `.claude/rules/repoprompt-mcp.md` for comprehensive patterns
 
 ## When to Ask vs. Proceed
 

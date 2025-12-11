@@ -265,7 +265,8 @@ enabling non-destructive note updates.
   all tasks in projects within that folder
 - **FR-004**: System MUST support filtering by tag(s) (ID or name) with
   `tagFilterMode` parameter: `"any"` (default, OR logic - tasks with ANY of
-  the specified tags) or `"all"` (AND logic - tasks with ALL specified tags)
+  the specified tags) or `"all"` (AND logic - tasks with ALL specified tags).
+  See "Tag Filter Behavior" section below for detailed semantics.
 - **FR-005**: System MUST support filtering by task status using values:
   'available', 'blocked', 'completed', 'dropped', 'dueSoon', 'next', 'overdue'
 - **FR-006**: System MUST support filtering by due date range using
@@ -344,7 +345,8 @@ enabling non-destructive note updates.
 
 - **FR-041**: System MUST return structured disambiguation errors when a
   name-based lookup matches multiple items: `{ success: false, error: string,
-  code: "DISAMBIGUATION_REQUIRED", matchingIds: string[] }`
+  code: "DISAMBIGUATION_REQUIRED", matchingIds: string[] }`. This is the
+  canonical pattern referenced by FR-023, FR-030, and FR-039.
 - **FR-042**: System MUST return standard error responses for all other
   failures: `{ success: false, error: string }` with descriptive error messages
 - **FR-043**: Error messages MUST be **actionable**: they MUST (1) quote the
@@ -491,9 +493,11 @@ migration. The tool handles this as follows:
 - **SC-005**: All task operations provide descriptive error messages when
   operations fail due to validation or not-found conditions
 - **SC-006**: The four enhanced task tools reduce the need for `dump_database`
-  by at least 80% for typical task management workflows
-- **SC-007**: Task modifications made through the tools are immediately
-  reflected in the OmniFocus application
+  for common task queries (finding tasks by filter, inspecting task details,
+  scheduling, and note updates) by providing targeted alternatives
+- **SC-007**: Task modifications made through the tools are reflected in the
+  OmniFocus application within 1 second (verified by manual inspection after
+  each write operation)
 
 ## Assumptions
 
@@ -516,7 +520,7 @@ migration. The tool handles this as follows:
 - **Repetition rules**: Setting up repeating tasks (future phase)
 - **Notifications**: Managing task notifications (future phase)
 - **Sort order customization**: Custom sorting of list results (returns in
-  natural order)
+  OmniFocus document storage order)
 - **Pagination**: Offset-based pagination for large result sets (use limit
   parameter instead)
 
