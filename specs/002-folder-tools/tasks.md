@@ -114,7 +114,7 @@
 > **TDD RULE: Improve code quality. Tests MUST stay GREEN.**
 
 - [x] T023 [US1] Refactor if needed while keeping tests green ✓
-- [ ] T024 [US1] Verify list_folders in OmniFocus Script Editor (manual test)
+- [x] T024 [US1] Verify list_folders in OmniFocus Script Editor (manual test) ✓
 
 **Checkpoint**: User Story 1 complete - `list_folders` tool functional and tested ✅
 
@@ -145,7 +145,7 @@
 ### 🔵 REFACTOR Phase - Polish
 
 - [x] T034 [US2] Refactor if needed while keeping tests green ✓
-- [ ] T035 [US2] Verify add_folder in OmniFocus Script Editor (manual test)
+- [x] T035 [US2] Verify add_folder in OmniFocus Script Editor (manual test) ✓
 
 **Checkpoint**: User Story 2 complete - `add_folder` tool functional and tested ✅
 
@@ -177,7 +177,7 @@
 ### 🔵 REFACTOR Phase - Polish
 
 - [x] T047 [US3] Refactor if needed while keeping tests green ✓
-- [ ] T048 [US3] Verify edit_folder in OmniFocus Script Editor (manual test)
+- [x] T048 [US3] Verify edit_folder in OmniFocus Script Editor (manual test) ✓
 
 **Checkpoint**: User Story 3 complete - `edit_folder` tool functional with disambiguation support ✅
 
@@ -208,7 +208,7 @@
 ### 🔵 REFACTOR Phase - Polish
 
 - [x] T058 [US4] Refactor if needed while keeping tests green ✓
-- [ ] T059 [US4] Verify remove_folder in OmniFocus Script Editor (manual test)
+- [x] T059 [US4] Verify remove_folder in OmniFocus Script Editor (manual test) ✓
 
 **Checkpoint**: User Story 4 complete - `remove_folder` tool functional with recursive deletion ✅
 
@@ -240,7 +240,7 @@
 ### 🔵 REFACTOR Phase - Polish
 
 - [x] T070 [US5] Refactor if needed while keeping tests green ✓
-- [ ] T071 [US5] Verify move_folder in OmniFocus Script Editor (manual test)
+- [x] T071 [US5] Verify move_folder in OmniFocus Script Editor (manual test) ✓
 
 **Checkpoint**: User Story 5 complete - `move_folder` tool functional with circular detection ✅
 
@@ -257,8 +257,8 @@
 - [x] T076 Run lint check: `pnpm lint` ✓
 - [x] T077 Run typecheck: `pnpm typecheck` ✓
 - [x] T078 Run build: `pnpm build` ✓
-- [ ] T079 Manual end-to-end verification with OmniFocus (all 5 tools)
-- [ ] T080 Run quickstart.md validation scenarios
+- [x] T079 Manual end-to-end verification with OmniFocus (all 5 tools) ✓
+- [x] T080 Run quickstart.md validation scenarios ✓
 
 ---
 
