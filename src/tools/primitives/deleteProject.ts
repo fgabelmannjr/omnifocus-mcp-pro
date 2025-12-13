@@ -79,9 +79,16 @@ function generateOmniScript(params: DeleteProjectInput): string {
     // Capture project info and count tasks before deletion
     var capturedId = project.id.primaryKey;
     var capturedName = project.name;
-    var taskCount = project.flattenedTasks.length;
+    var tasks = project.flattenedTasks;
+    var taskCount = tasks.length;
 
-    // Delete the project (cascade deletion of tasks is automatic)
+    // Explicitly delete all tasks first (OmniFocus does NOT cascade delete)
+    // Per OmniJS docs: "To remove tasks from a project, use the deleteObject() function"
+    tasks.forEach(function(task) {
+      deleteObject(task);
+    });
+
+    // Now delete the project itself
     deleteObject(project);
 
     return JSON.stringify({
@@ -99,11 +106,12 @@ function generateOmniScript(params: DeleteProjectInput): string {
 /**
  * Delete a project from OmniFocus using Omni Automation JavaScript
  *
- * Deleting a project automatically removes all child tasks (cascade delete).
- * This is OmniFocus's native behavior.
+ * Per OmniJS documentation, deleting a project does NOT cascade delete child tasks.
+ * Tasks must be explicitly deleted using deleteObject() before deleting the project.
+ * This implementation handles the cascade deletion explicitly.
  *
  * @param params - Identification parameters (id or name)
- * @returns Promise with deleted project info (including cascade message), disambiguation error, or standard error
+ * @returns Promise with deleted project info (including task count), disambiguation error, or standard error
  */
 export async function deleteProject(params: DeleteProjectInput): Promise<DeleteProjectResponse> {
   try {

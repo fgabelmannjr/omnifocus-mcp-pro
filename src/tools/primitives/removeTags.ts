@@ -15,7 +15,8 @@ function generateRemoveTagsScript(params: RemoveTagsInput): string {
     str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
 
   const taskIdsArray = taskIds.map((id) => `"${escapeForJS(id)}"`).join(', ');
-  const tagIdsArray = tagIds ? tagIds.map((id) => `"${escapeForJS(id)}"`).join(', ') : '[]';
+  // When tagIds is undefined, generate empty string for proper empty array literal
+  const tagIdsArray = tagIds ? tagIds.map((id) => `"${escapeForJS(id)}"`).join(', ') : '';
 
   return `(function() {
   try {

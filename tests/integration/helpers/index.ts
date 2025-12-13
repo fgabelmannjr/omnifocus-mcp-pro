@@ -6,6 +6,14 @@ export {
   getTestFolderId,
   TEST_FOLDER_NAME
 } from './testFolder.js';
+export {
+  cleanupTestTags,
+  createTestTag,
+  deleteTestTag,
+  getTagIdByName,
+  TEST_TAG_PREFIX
+} from './testTag.js';
+export { createTestTask, deleteTestTask, TEST_TASK_PREFIX } from './testTask.js';
 
 /**
  * Wait for OmniFocus to sync after a mutation operation.
