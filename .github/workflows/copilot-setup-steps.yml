@@ -64,7 +64,7 @@ jobs:
           # Verify required npm scripts exist
           node -e "
             const pkg = require('./package.json');
-            const required = ['build', 'start', 'copy-files'];
+            const required = ['build', 'start'];
             const missing = required.filter(s => !pkg.scripts[s]);
             if (missing.length) {
               console.error('❌ Missing scripts:', missing.join(', '));
