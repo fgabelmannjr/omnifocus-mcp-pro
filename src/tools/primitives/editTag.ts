@@ -1,6 +1,5 @@
 import type { EditTagInput, EditTagResponse } from '../../contracts/tag-tools/edit-tag.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Edit a tag's properties (name, status, allowsNextAction).
@@ -10,14 +9,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function editTag(params: EditTagInput): Promise<EditTagResponse> {
   const script = generateEditTagScript(params);
-  const tempFile = writeSecureTempFile(script, 'edit_tag', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as EditTagResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as EditTagResponse;
 }
 
 /**

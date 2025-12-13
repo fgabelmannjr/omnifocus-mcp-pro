@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { addProject } from '../../../src/tools/primitives/addProject.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('addProject', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('addProject', () => {
 
   describe('successful project creation', () => {
     it('should create a project at root level successfully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: 'project-123',
         name: 'Test Project'
@@ -39,11 +32,11 @@ describe('addProject', () => {
 
       expect(result.success).toBe(true);
       expect(result.projectId).toBe('project-123');
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should create a project in a folder', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: 'project-456',
         name: 'Folder Project'
@@ -59,7 +52,7 @@ describe('addProject', () => {
     });
 
     it('should create a project with all options', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: 'project-789',
         name: 'Full Project'
@@ -82,7 +75,7 @@ describe('addProject', () => {
     });
 
     it('should create a sequential project', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: 'seq-project',
         name: 'Sequential Project'
@@ -97,7 +90,7 @@ describe('addProject', () => {
     });
 
     it('should create a parallel project', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: 'par-project',
         name: 'Parallel Project'
@@ -114,7 +107,7 @@ describe('addProject', () => {
 
   describe('error handling', () => {
     it('should handle folder not found error', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Folder not found: NonExistent'
       });
@@ -129,7 +122,7 @@ describe('addProject', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await addProject({ name: 'Project' });
 
@@ -138,7 +131,7 @@ describe('addProject', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -150,7 +143,7 @@ describe('addProject', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await addProject({ name: 'Project' });
 
@@ -164,7 +157,7 @@ describe('addProject', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Project name is required');
-      expect(mockExecuteOmniFocusScript).not.toHaveBeenCalled();
+      expect(mockExecuteOmniJS).not.toHaveBeenCalled();
     });
 
     it('should reject whitespace-only name', async () => {
@@ -172,11 +165,11 @@ describe('addProject', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Project name is required');
-      expect(mockExecuteOmniFocusScript).not.toHaveBeenCalled();
+      expect(mockExecuteOmniJS).not.toHaveBeenCalled();
     });
 
     it('should handle special characters in name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: '123',
         name: 'Project with "quotes" and \'apostrophes\''
@@ -190,7 +183,7 @@ describe('addProject', () => {
     });
 
     it('should handle empty optional fields', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: '123',
         name: 'Project'
@@ -208,7 +201,7 @@ describe('addProject', () => {
 
   describe('date handling', () => {
     it('should handle due date only', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: '123',
         name: 'Project'
@@ -223,7 +216,7 @@ describe('addProject', () => {
     });
 
     it('should handle defer date only', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: '123',
         name: 'Project'
@@ -240,7 +233,7 @@ describe('addProject', () => {
 
   describe('tag handling', () => {
     it('should handle multiple tags', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: '123',
         name: 'Project'
@@ -255,7 +248,7 @@ describe('addProject', () => {
     });
 
     it('should handle special characters in tags', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         projectId: '123',
         name: 'Project'

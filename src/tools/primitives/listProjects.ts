@@ -2,8 +2,7 @@ import type {
   ListProjectsInput,
   ListProjectsResponse
 } from '../../contracts/project-tools/list-projects.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * List projects with optional filtering.
@@ -13,14 +12,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function listProjects(params: ListProjectsInput): Promise<ListProjectsResponse> {
   const script = generateListProjectsScript(params);
-  const tempFile = writeSecureTempFile(script, 'list_projects', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as ListProjectsResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as ListProjectsResponse;
 }
 
 /**

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTag } from '../../../src/tools/primitives/createTag.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 describe('createTag', () => {
@@ -13,13 +13,11 @@ describe('createTag', () => {
 
   describe('T029: Success case creating tag', () => {
     it('should create a tag with minimal parameters', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-new-123',
-          name: 'Work'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-new-123',
+        name: 'Work'
+      });
 
       const result = await createTag({ name: 'Work' });
 
@@ -28,17 +26,15 @@ describe('createTag', () => {
         expect(result.id).toBe('tag-new-123');
         expect(result.name).toBe('Work');
       }
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
 
     it('should create a tag with allowsNextAction set to false', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-new-456',
-          name: 'Waiting'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-new-456',
+        name: 'Waiting'
+      });
 
       const result = await createTag({
         name: 'Waiting',
@@ -55,13 +51,11 @@ describe('createTag', () => {
 
   describe('T030: With position placement', () => {
     it('should create a tag with before position', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-new-before',
-          name: 'High Priority'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-new-before',
+        name: 'High Priority'
+      });
 
       const result = await createTag({
         name: 'High Priority',
@@ -69,17 +63,15 @@ describe('createTag', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
 
     it('should create a tag with after position', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-new-after',
-          name: 'Low Priority'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-new-after',
+        name: 'Low Priority'
+      });
 
       const result = await createTag({
         name: 'Low Priority',
@@ -87,17 +79,15 @@ describe('createTag', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
 
     it('should create a tag with beginning position', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-new-beginning',
-          name: 'First'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-new-beginning',
+        name: 'First'
+      });
 
       const result = await createTag({
         name: 'First',
@@ -105,17 +95,15 @@ describe('createTag', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
 
     it('should create a tag with ending position', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-new-ending',
-          name: 'Last'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-new-ending',
+        name: 'Last'
+      });
 
       const result = await createTag({
         name: 'Last',
@@ -123,19 +111,17 @@ describe('createTag', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
   });
 
   describe('T031: With parentId (nested tag)', () => {
     it('should create a nested tag with parentId', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-child-123',
-          name: 'Office'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-child-123',
+        name: 'Office'
+      });
 
       const result = await createTag({
         name: 'Office',
@@ -147,18 +133,16 @@ describe('createTag', () => {
         expect(result.id).toBe('tag-child-123');
         expect(result.name).toBe('Office');
       }
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
   });
 
   describe('T032: Error - invalid parentId', () => {
     it('should return error for invalid parentId', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: false,
-          error: "Parent tag 'tag-invalid' not found"
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: false,
+        error: "Parent tag 'tag-invalid' not found"
+      });
 
       const result = await createTag({
         name: 'Child Tag',
@@ -175,12 +159,10 @@ describe('createTag', () => {
 
   describe('T032b: Error - invalid relativeTo', () => {
     it('should return error for invalid relativeTo in position', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: false,
-          error: "Reference tag 'tag-invalid' not found"
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: false,
+        error: "Reference tag 'tag-invalid' not found"
+      });
 
       const result = await createTag({
         name: 'New Tag',
@@ -197,13 +179,11 @@ describe('createTag', () => {
 
   describe('T032c: With parentId AND position combination', () => {
     it('should create tag with both parentId and position (beginning of parent)', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-combo-123',
-          name: 'First Child'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-combo-123',
+        name: 'First Child'
+      });
 
       const result = await createTag({
         name: 'First Child',
@@ -216,17 +196,15 @@ describe('createTag', () => {
         expect(result.id).toBe('tag-combo-123');
         expect(result.name).toBe('First Child');
       }
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
 
     it('should create tag with parentId and position (after sibling)', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-combo-456',
-          name: 'Second Child'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-combo-456',
+        name: 'Second Child'
+      });
 
       const result = await createTag({
         name: 'Second Child',
@@ -244,12 +222,10 @@ describe('createTag', () => {
 
   describe('Edge cases', () => {
     it('should handle OmniFocus script execution errors', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: false,
-          error: 'OmniFocus error: Unable to create tag'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: false,
+        error: 'OmniFocus error: Unable to create tag'
+      });
 
       const result = await createTag({ name: 'Test' });
 
@@ -260,20 +236,18 @@ describe('createTag', () => {
     });
 
     it('should handle special characters in tag name', async () => {
-      vi.mocked(executeOmniFocusScript).mockResolvedValue(
-        JSON.stringify({
-          success: true,
-          id: 'tag-special',
-          name: 'Tag with "quotes" and \\backslash'
-        })
-      );
+      vi.mocked(executeOmniJS).mockResolvedValue({
+        success: true,
+        id: 'tag-special',
+        name: 'Tag with "quotes" and \\backslash'
+      });
 
       const result = await createTag({
         name: 'Tag with "quotes" and \\backslash'
       });
 
       expect(result.success).toBe(true);
-      expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+      expect(executeOmniJS).toHaveBeenCalledOnce();
     });
   });
 });

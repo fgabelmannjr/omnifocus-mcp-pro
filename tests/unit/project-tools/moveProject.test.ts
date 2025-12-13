@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Import will fail until primitive exists - that's expected for TDD
 // @ts-expect-error - Primitive doesn't exist yet (TDD RED phase)
 import { moveProject } from '../../../src/tools/primitives/moveProject.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T059: moveProject moves to folder by ID
@@ -23,17 +23,17 @@ describe('moveProject', () => {
       parentFolderName: 'Work'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ id: 'proj123', targetFolderId: 'folder456' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify script path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('move_project');
-    expect(scriptPath).toContain('.js');
+    // Verify script content
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('proj123');
+    expect(scriptContent).toContain('folder456');
 
     // Verify result includes new parent folder information
     if (result.success) {
@@ -60,12 +60,12 @@ describe('moveProject to root', () => {
       parentFolderName: null
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ id: 'proj123', root: true });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify the result shows root level (null parent)
     if (result.success) {
@@ -89,7 +89,7 @@ describe('moveProject error handling', () => {
       error: "Folder 'folder456' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ id: 'proj123', targetFolderId: 'folder456' });
 
@@ -105,7 +105,7 @@ describe('moveProject error handling', () => {
       error: "Project 'proj999' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ id: 'proj999', targetFolderId: 'folder456' });
 
@@ -130,7 +130,7 @@ describe('moveProject disambiguation', () => {
       matchingIds: ['proj123', 'proj456', 'proj789']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ name: 'Renovation', targetFolderId: 'folder456' });
 
@@ -150,7 +150,7 @@ describe('moveProject disambiguation', () => {
       error: "Multiple folders match 'Work'. Please use targetFolderId to specify which one."
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ id: 'proj123', targetFolderName: 'Work' });
 
@@ -176,7 +176,7 @@ describe('moveProject with name-based lookup', () => {
       parentFolderName: 'Personal'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({
       name: 'House Renovation',
@@ -205,7 +205,7 @@ describe('moveProject with position parameter', () => {
       parentFolderName: 'Work'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({
       id: 'proj123',
@@ -214,11 +214,11 @@ describe('moveProject with position parameter', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify script was generated with position parameter
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('move_project');
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('beginning');
   });
 
   it('should default to ending position when not specified', async () => {
@@ -230,11 +230,11 @@ describe('moveProject with position parameter', () => {
       parentFolderName: 'Work'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await moveProject({ id: 'proj123', targetFolderId: 'folder456' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
   });
 });

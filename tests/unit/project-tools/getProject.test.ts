@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getProject } from '../../../src/tools/primitives/getProject.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 // Mock the script execution
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T017-T020: Unit tests for getProject primitive (RED phase - should FAIL)
@@ -51,7 +51,7 @@ describe('getProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getProject({ id: 'proj123' });
 
@@ -128,17 +128,16 @@ describe('getProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getProject({ name: 'Renovation' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify temp file path contains get_project identifier
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('get_project');
-    expect(scriptPath).toContain('.js');
+    // Verify script contains project name lookup
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('Renovation');
 
     if (result.success) {
       expect(result.project.id).toBe('proj456');
@@ -165,7 +164,7 @@ describe('getProject', () => {
       error: "Project 'proj123' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getProject({ id: 'proj123' });
 
@@ -186,7 +185,7 @@ describe('getProject', () => {
       matchingIds: ['proj1', 'proj2', 'proj3']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getProject({ name: 'Renovation' });
 

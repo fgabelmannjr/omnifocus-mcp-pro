@@ -2,8 +2,7 @@ import type {
   GetProjectInput,
   GetProjectResponse
 } from '../../contracts/project-tools/get-project.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Get a single project by ID or name.
@@ -13,14 +12,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function getProject(params: GetProjectInput): Promise<GetProjectResponse> {
   const script = generateGetProjectScript(params);
-  const tempFile = writeSecureTempFile(script, 'get_project', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as GetProjectResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as GetProjectResponse;
 }
 
 /**

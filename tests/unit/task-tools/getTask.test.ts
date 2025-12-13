@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTask } from '../../../src/tools/primitives/getTask.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 // Mock the script execution
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T017: Unit tests for getTask primitive - basic functionality (RED phase - should FAIL)
@@ -46,7 +46,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'task123' });
 
@@ -99,17 +99,16 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ name: 'Named Task' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify temp file path contains get_task identifier
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('get_task');
-    expect(scriptPath).toContain('.js');
+    // Verify the script was called with the task name
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('Named Task');
 
     if (result.success) {
       expect(result.task.id).toBe('task456');
@@ -156,7 +155,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'task-by-id', name: 'Some Name' });
 
@@ -173,7 +172,7 @@ describe('getTask', () => {
       error: "Task 'nonexistent123' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'nonexistent123' });
 
@@ -189,7 +188,7 @@ describe('getTask', () => {
       error: "Task 'Nonexistent Task' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ name: 'Nonexistent Task' });
 
@@ -207,7 +206,7 @@ describe('getTask', () => {
       matchingIds: ['task1', 'task2', 'task3']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ name: 'Test' });
 
@@ -252,7 +251,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'completed-task' });
 
@@ -297,7 +296,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'dropped-task' });
 
@@ -346,7 +345,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'multi-tag-task' });
 
@@ -394,7 +393,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'parent-task' });
 
@@ -439,7 +438,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'floating-task' });
 
@@ -482,7 +481,7 @@ describe('getTask', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await getTask({ id: 'inbox-task' });
 

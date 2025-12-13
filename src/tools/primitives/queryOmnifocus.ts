@@ -1,6 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 export interface QueryOmnifocusParams {
   entity: 'tasks' | 'projects' | 'folders';
@@ -47,10 +46,9 @@ export async function queryOmnifocus(params: QueryOmnifocusParams): Promise<Quer
   }
 
   const jxaScript = generateQueryScript(params);
-  const tempFile = writeSecureTempFile(jxaScript, 'omnifocus_query', '.js');
 
   try {
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
+    const result = (await executeOmniJS(jxaScript)) as {
       error?: string;
       items?: unknown[];
       count?: number;
@@ -74,8 +72,6 @@ export async function queryOmnifocus(params: QueryOmnifocusParams): Promise<Quer
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
-  } finally {
-    tempFile.cleanup();
   }
 }
 

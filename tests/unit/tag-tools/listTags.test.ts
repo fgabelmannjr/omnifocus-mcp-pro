@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listTags } from '../../../src/tools/primitives/listTags.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 // Mock the script execution
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T016-T019: Unit tests for listTags primitive
@@ -37,7 +37,7 @@ describe('listTags', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTags({});
 
@@ -65,17 +65,16 @@ describe('listTags', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTags({ status: 'active' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tags');
-    expect(scriptPath).toContain('.js');
+    // Verify the script contains the status filter
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('active');
   });
 
   // T018: With parentId filter
@@ -94,17 +93,16 @@ describe('listTags', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTags({ parentId: 'tag1' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tags');
-    expect(scriptPath).toContain('.js');
+    // Verify the script contains the parent ID
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('tag1');
   });
 
   // T019: With includeChildren=false
@@ -123,15 +121,15 @@ describe('listTags', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTags({ includeChildren: false });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify the script uses the correct tag collection
-    const scriptCall = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
+    const scriptCall = vi.mocked(executeOmniJS).mock.calls[0][0];
     // When includeChildren is false, should use database.tags or parent.tags
     expect(scriptCall).toMatch(/tags(?!.*flattenedTags)/); // Should contain "tags" but not "flattenedTags"
   });
@@ -142,17 +140,16 @@ describe('listTags', () => {
       tags: []
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTags({ includeChildren: true });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tags');
-    expect(scriptPath).toContain('.js');
+    // Verify the script uses flattenedTags for includeChildren=true
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('flattenedTags');
   });
 
   it('should return error on failure', async () => {
@@ -161,7 +158,7 @@ describe('listTags', () => {
       error: 'OmniFocus error'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockErrorResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockErrorResponse);
 
     const result = await listTags({});
 
@@ -172,7 +169,7 @@ describe('listTags', () => {
   });
 
   it('should handle script execution errors', async () => {
-    vi.mocked(executeOmniFocusScript).mockRejectedValue(new Error('Script execution failed'));
+    vi.mocked(executeOmniJS).mockRejectedValue(new Error('Script execution failed'));
 
     await expect(listTags({})).rejects.toThrow('Script execution failed');
   });

@@ -1,6 +1,5 @@
 import type { ListTagsInput, ListTagsResponse } from '../../contracts/tag-tools/list-tags.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * List tags with optional filtering.
@@ -10,14 +9,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function listTags(params: ListTagsInput): Promise<ListTagsResponse> {
   const script = generateListTagsScript(params);
-  const tempFile = writeSecureTempFile(script, 'list_tags', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as ListTagsResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as ListTagsResponse;
 }
 
 /**

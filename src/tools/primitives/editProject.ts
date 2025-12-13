@@ -1,6 +1,5 @@
 import type { EditProjectInput, EditProjectResponse } from '../../contracts/project-tools/index.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Edit a project's properties using Omni Automation JavaScript.
@@ -10,14 +9,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function editProject(params: EditProjectInput): Promise<EditProjectResponse> {
   const script = generateEditProjectScript(params);
-  const tempFile = writeSecureTempFile(script, 'edit_project', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as EditProjectResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as EditProjectResponse;
 }
 
 /**
@@ -177,15 +170,12 @@ function generateEditProjectScript(params: EditProjectInput): string {
     if (reviewInterval === null) {
       reviewIntervalUpdate = 'project.reviewInterval = null;';
     } else {
-      // Map unit names: 'days' -> 'Day', 'weeks' -> 'Week', etc.
-      const unitMap: Record<string, string> = {
-        days: 'Day',
-        weeks: 'Week',
-        months: 'Month',
-        years: 'Year'
-      };
-      const unitValue = unitMap[reviewInterval.unit] || 'Day';
-      reviewIntervalUpdate = `project.reviewInterval = { steps: ${reviewInterval.steps}, unit: ReviewInterval.Unit.${unitValue} };`;
+      // Modify existing value object and re-assign (per OmniJS API)
+      reviewIntervalUpdate = `
+    var ri = project.reviewInterval;
+    ri.steps = ${reviewInterval.steps};
+    ri.unit = "${reviewInterval.unit}";
+    project.reviewInterval = ri;`;
     }
   }
 

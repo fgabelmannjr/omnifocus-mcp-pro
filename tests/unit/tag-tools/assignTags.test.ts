@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { assignTags } from '../../../src/tools/primitives/assignTags.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 describe('assignTags', () => {
@@ -12,18 +12,16 @@ describe('assignTags', () => {
   });
 
   it('should successfully assign tags to a task', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task-123',
-            taskName: 'My Task',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task-123',
+          taskName: 'My Task',
+          success: true
+        }
+      ]
+    });
 
     const result = await assignTags({
       taskIds: ['task-123'],
@@ -40,23 +38,21 @@ describe('assignTags', () => {
   });
 
   it('should successfully assign multiple tags to multiple tasks', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task-1',
-            taskName: 'Task One',
-            success: true
-          },
-          {
-            taskId: 'task-2',
-            taskName: 'Task Two',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task-1',
+          taskName: 'Task One',
+          success: true
+        },
+        {
+          taskId: 'task-2',
+          taskName: 'Task Two',
+          success: true
+        }
+      ]
+    });
 
     const result = await assignTags({
       taskIds: ['task-1', 'task-2'],
@@ -72,29 +68,27 @@ describe('assignTags', () => {
   });
 
   it('should continue on per-item failures and return partial results', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task-1',
-            taskName: 'Task One',
-            success: true
-          },
-          {
-            taskId: 'task-2',
-            taskName: '',
-            success: false,
-            error: "Task 'task-2' not found"
-          },
-          {
-            taskId: 'task-3',
-            taskName: 'Task Three',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task-1',
+          taskName: 'Task One',
+          success: true
+        },
+        {
+          taskId: 'task-2',
+          taskName: '',
+          success: false,
+          error: "Task 'task-2' not found"
+        },
+        {
+          taskId: 'task-3',
+          taskName: 'Task Three',
+          success: true
+        }
+      ]
+    });
 
     const result = await assignTags({
       taskIds: ['task-1', 'task-2', 'task-3'],
@@ -112,21 +106,19 @@ describe('assignTags', () => {
   });
 
   it('should return disambiguation errors when multiple matches found', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'Ambiguous',
-            taskName: '',
-            success: false,
-            error: "Multiple tasks named 'Ambiguous' found",
-            code: 'DISAMBIGUATION_REQUIRED',
-            matchingIds: ['id1', 'id2', 'id3']
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'Ambiguous',
+          taskName: '',
+          success: false,
+          error: "Multiple tasks named 'Ambiguous' found",
+          code: 'DISAMBIGUATION_REQUIRED',
+          matchingIds: ['id1', 'id2', 'id3']
+        }
+      ]
+    });
 
     const result = await assignTags({
       taskIds: ['Ambiguous'],
@@ -143,18 +135,16 @@ describe('assignTags', () => {
   });
 
   it('should be idempotent when tag is already assigned', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task-123',
-            taskName: 'My Task',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task-123',
+          taskName: 'My Task',
+          success: true
+        }
+      ]
+    });
 
     // Assign tag first time
     const result1 = await assignTags({
@@ -177,12 +167,10 @@ describe('assignTags', () => {
   });
 
   it('should return error when tag resolution fails for all tags', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: false,
-        error: 'No valid tags could be resolved'
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: false,
+      error: 'No valid tags could be resolved'
+    });
 
     const result = await assignTags({
       taskIds: ['task-1'],
@@ -196,7 +184,7 @@ describe('assignTags', () => {
   });
 
   it('should handle script execution errors', async () => {
-    vi.mocked(executeOmniFocusScript).mockRejectedValue(new Error('Script execution failed'));
+    vi.mocked(executeOmniJS).mockRejectedValue(new Error('Script execution failed'));
 
     await expect(
       assignTags({

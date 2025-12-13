@@ -1,7 +1,6 @@
 import type { MoveProjectInput, MoveProjectResponse } from '../../contracts/project-tools/index.js';
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Generate Omni Automation JavaScript for moving a project
@@ -196,24 +195,10 @@ function generateOmniScript(params: MoveProjectInput): string {
  * @returns Promise with moved project info, disambiguation error, or standard error
  */
 export async function moveProject(params: MoveProjectInput): Promise<MoveProjectResponse> {
-  // Generate Omni Automation script
-  const script = generateOmniScript(params);
-
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'move_project', '.js');
-
   try {
-    // Execute via Omni Automation
-    const scriptResult = await executeOmniFocusScript(tempFile.path);
-
-    // Parse result if it's a string, otherwise use as-is
-    const result =
-      typeof scriptResult === 'string'
-        ? (JSON.parse(scriptResult) as MoveProjectResponse)
-        : (scriptResult as MoveProjectResponse);
-
-    // Pass through the result (success, error, or disambiguation)
-    return result;
+    const script = generateOmniScript(params);
+    const result = await executeOmniJS(script);
+    return result as MoveProjectResponse;
   } catch (error: unknown) {
     logger.error('Error in moveProject', 'moveProject', { error });
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -221,8 +206,5 @@ export async function moveProject(params: MoveProjectInput): Promise<MoveProject
       success: false,
       error: errorMessage || 'Unknown error in moveProject'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

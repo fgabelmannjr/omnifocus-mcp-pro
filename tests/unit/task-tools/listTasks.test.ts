@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listTasks } from '../../../src/tools/primitives/listTasks.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 // Mock the script execution
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T007: Unit test for listTasks primitive (RED phase - should FAIL)
@@ -33,7 +33,7 @@ describe('listTasks', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({});
 
@@ -72,17 +72,16 @@ describe('listTasks with project filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ projectId: 'proj123' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tasks');
-    expect(scriptPath).toContain('.js');
+    // Verify the script was called with project filter content
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('proj123');
 
     // Verify the result contains tasks from the specified project
     if (result.success) {
@@ -111,17 +110,16 @@ describe('listTasks with project filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ projectName: 'My Project' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tasks');
-    expect(scriptPath).toContain('.js');
+    // Verify the script was called with project name filter content
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('My Project');
 
     // Verify the result contains tasks from the specified project
     if (result.success) {
@@ -136,7 +134,7 @@ describe('listTasks with project filter', () => {
       tasks: []
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ projectId: 'nonexistent' });
 
@@ -168,7 +166,7 @@ describe('listTasks with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({
       dueAfter: '2025-01-01T00:00:00Z',
@@ -203,7 +201,7 @@ describe('listTasks with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ status: ['Available', 'Blocked'] });
 
@@ -229,7 +227,7 @@ describe('listTasks with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ flagged: true });
 
@@ -261,7 +259,7 @@ describe('listTasks with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ includeCompleted: true });
 
@@ -306,15 +304,12 @@ describe('listTasks with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ limit: 2 });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
-    // Verify the script path contains limit indicator
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tasks');
+    expect(executeOmniJS).toHaveBeenCalled();
     if (result.success) {
       expect(result.tasks).toHaveLength(2);
     }
@@ -345,17 +340,17 @@ describe('listTasks with tag filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ tagIds: ['t1', 't2'], tagFilterMode: 'all' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tasks');
-    expect(scriptPath).toContain('.js');
+    // Verify the script content was generated with tag filter
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('t1');
+    expect(scriptContent).toContain('t2');
   });
 
   it('should filter by tagIds with tagFilterMode "any" (OR logic)', async () => {
@@ -381,17 +376,16 @@ describe('listTasks with tag filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ tagIds: ['t1'], tagFilterMode: 'any' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tasks');
-    expect(scriptPath).toContain('.js');
+    // Verify the script content was generated with tag filter
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('t1');
   });
 
   it('should filter by tagNames', async () => {
@@ -417,16 +411,16 @@ describe('listTasks with tag filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listTasks({ tagNames: ['Work', 'Urgent'], tagFilterMode: 'any' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the function was called with a temp file path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_tasks');
-    expect(scriptPath).toContain('.js');
+    // Verify the script content was generated with tag names
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0];
+    expect(scriptContent).toContain('Work');
+    expect(scriptContent).toContain('Urgent');
   });
 });

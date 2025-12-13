@@ -1,6 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 // Interface for task creation parameters
 export interface AddOmniFocusTaskParams {
@@ -172,12 +171,9 @@ export async function addOmniFocusTask(params: AddOmniFocusTaskParams): Promise<
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'omnifocus_add', '.js');
-
   try {
     // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
+    const result = (await executeOmniJS(script)) as {
       success: boolean;
       taskId?: string;
       name?: string;
@@ -215,8 +211,5 @@ export async function addOmniFocusTask(params: AddOmniFocusTaskParams): Promise<
       success: false,
       error: errorMessage || 'Unknown error in addOmniFocusTask'
     };
-  } finally {
-    // Cleanup temp file
-    tempFile.cleanup();
   }
 }

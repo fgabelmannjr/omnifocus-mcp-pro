@@ -1,7 +1,6 @@
 import type { OmnifocusDatabase } from '../types.js';
 import { logger } from './logger.js';
-import { executeOmniFocusScript } from './scriptExecution.js';
-import { writeSecureTempFile } from './secureTempFile.js';
+import { executeOmniJS } from './scriptExecution.js';
 
 interface CacheEntry {
   data: OmnifocusDatabase;
@@ -172,11 +171,8 @@ class OmniFocusCacheManager {
       })();
     `;
 
-    // Write to secure temp file and execute
-    const tempFile = writeSecureTempFile(script, 'omnifocus_checksum', '.js');
-
     try {
-      const result = (await executeOmniFocusScript(tempFile.path)) as { checksum?: string };
+      const result = (await executeOmniJS(script)) as { checksum?: string };
       if (!result || !result.checksum) {
         throw new Error('Invalid checksum result from script');
       }
@@ -189,8 +185,6 @@ class OmniFocusCacheManager {
       throw new Error(
         `Failed to get database checksum: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
-    } finally {
-      tempFile.cleanup();
     }
   }
 

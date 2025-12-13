@@ -1,17 +1,10 @@
 import type { RemoveTagsInput, RemoveTagsResponse } from '../../contracts/tag-tools/remove-tags.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 export async function removeTags(params: RemoveTagsInput): Promise<RemoveTagsResponse> {
   const script = generateRemoveTagsScript(params);
-  const tempFile = writeSecureTempFile(script, 'remove_tags', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string);
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as RemoveTagsResponse;
 }
 
 function generateRemoveTagsScript(params: RemoveTagsInput): string {

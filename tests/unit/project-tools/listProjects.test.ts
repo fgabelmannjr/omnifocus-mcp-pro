@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Import will fail until primitive exists - that's expected for TDD
 // @ts-expect-error - Primitive doesn't exist yet (TDD RED phase)
 import { listProjects } from '../../../src/tools/primitives/listProjects.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T007: listProjects returns projects on success
@@ -35,7 +35,7 @@ describe('listProjects', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({});
 
@@ -53,7 +53,7 @@ describe('listProjects', () => {
       projects: []
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ folderId: 'nonexistent' });
 
@@ -91,17 +91,16 @@ describe('listProjects with folder filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ folderId: 'folder123' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify script path
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_projects');
-    expect(scriptPath).toContain('.js');
+    // Verify script content contains folder ID
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('folder123');
 
     // Verify result contains projects from folder
     if (result.success) {
@@ -131,12 +130,12 @@ describe('listProjects with folder filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ folderName: 'Personal' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify the result contains projects from the named folder
     if (result.success) {
@@ -177,12 +176,12 @@ describe('listProjects with review status filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ reviewStatus: 'due' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify the script was called (logic verification happens in OmniJS)
     if (result.success) {
@@ -216,12 +215,12 @@ describe('listProjects with review status filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ reviewStatus: 'upcoming' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify the script was called (logic verification happens in OmniJS)
     if (result.success) {
@@ -265,12 +264,12 @@ describe('listProjects with review status filter', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ reviewStatus: 'any' });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // Verify "any" returns all projects regardless of review status
     if (result.success) {
@@ -306,7 +305,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ dueAfter: '2025-12-01T00:00:00Z' });
 
@@ -338,7 +337,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ dueBefore: '2025-12-31T23:59:59Z' });
 
@@ -370,7 +369,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ deferAfter: '2025-12-01T00:00:00Z' });
 
@@ -402,7 +401,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ deferBefore: '2025-06-30T23:59:59Z' });
 
@@ -419,7 +418,7 @@ describe('listProjects with date and status filters', () => {
       projects: []
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({
       dueAfter: '2025-12-31T00:00:00Z',
@@ -467,7 +466,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ status: ['Active', 'OnHold'] });
 
@@ -500,7 +499,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ flagged: true });
 
@@ -546,7 +545,7 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ includeCompleted: true });
 
@@ -592,16 +591,16 @@ describe('listProjects with date and status filters', () => {
       ]
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ limit: 2 });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
-    // Verify the script path contains limit indicator
-    const scriptPath = vi.mocked(executeOmniFocusScript).mock.calls[0][0];
-    expect(scriptPath).toContain('list_projects');
+    // Verify the script was called
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('flattenedProjects');
 
     if (result.success) {
       expect(result.projects).toHaveLength(2);
@@ -630,12 +629,12 @@ describe('listProjects with date and status filters', () => {
       projects: mockProjects
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await listProjects({ limit: 5000 });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
 
     // The script should have been generated with clamped limit (1000)
     // We verify the script was called, actual clamping happens in primitive

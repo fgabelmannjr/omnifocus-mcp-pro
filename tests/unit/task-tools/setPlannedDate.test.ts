@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setPlannedDate } from '../../../src/tools/primitives/setPlannedDate.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T027: Unit tests for setPlannedDate primitive
@@ -19,7 +19,7 @@ describe('setPlannedDate', () => {
       name: 'Test Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       id: 'task123',
@@ -40,7 +40,7 @@ describe('setPlannedDate', () => {
       name: 'Named Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       name: 'Named Task',
@@ -61,7 +61,7 @@ describe('setPlannedDate', () => {
       name: 'Task to Clear'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       id: 'task789',
@@ -82,7 +82,7 @@ describe('setPlannedDate', () => {
       name: 'Test Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     // Test with different ISO 8601 formats
     const result = await setPlannedDate({
@@ -99,7 +99,7 @@ describe('setPlannedDate', () => {
       error: "Task 'nonexistent' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       id: 'nonexistent',
@@ -118,7 +118,7 @@ describe('setPlannedDate', () => {
       error: "Task 'Nonexistent Task' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       name: 'Nonexistent Task',
@@ -137,7 +137,7 @@ describe('setPlannedDate', () => {
       error: 'Planned date requires OmniFocus v4.7 or later'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       id: 'task123',
@@ -157,7 +157,7 @@ describe('setPlannedDate', () => {
         'Planned date requires database migration. Please open OmniFocus preferences to migrate.'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       id: 'task123',
@@ -178,7 +178,7 @@ describe('setPlannedDate', () => {
       matchingIds: ['task1', 'task2']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       name: 'Test',
@@ -201,7 +201,7 @@ describe('setPlannedDate', () => {
       matchingIds: ['task1', 'task2', 'task3']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await setPlannedDate({
       name: 'Ambiguous',
@@ -215,21 +215,21 @@ describe('setPlannedDate', () => {
     }
   });
 
-  it('should call executeOmniFocusScript with correct parameters', async () => {
+  it('should call executeOmniJS with correct parameters', async () => {
     const mockResponse = {
       success: true,
       id: 'task123',
       name: 'Test Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     await setPlannedDate({
       id: 'task123',
       plannedDate: '2025-12-15T09:00:00Z'
     });
 
-    expect(executeOmniFocusScript).toHaveBeenCalledTimes(1);
-    expect(executeOmniFocusScript).toHaveBeenCalledWith(expect.any(String));
+    expect(executeOmniJS).toHaveBeenCalledTimes(1);
+    expect(executeOmniJS).toHaveBeenCalledWith(expect.any(String));
   });
 });

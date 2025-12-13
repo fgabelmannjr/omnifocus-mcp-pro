@@ -3,8 +3,7 @@ import type {
   CreateProjectResponse
 } from '../../contracts/project-tools/index.js';
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Generate Omni Automation JavaScript for creating a project
@@ -181,11 +180,14 @@ function generateOmniScript(params: CreateProjectInput): string {
     ${deferDate !== undefined && deferDate !== null ? `newProject.deferDate = new Date("${deferDate}");` : deferDate === null ? 'newProject.deferDate = null;' : ''}
     ${dueDate !== undefined && dueDate !== null ? `newProject.dueDate = new Date("${dueDate}");` : dueDate === null ? 'newProject.dueDate = null;' : ''}
 
-    // Set review interval
+    // Set review interval (modify existing value object and re-assign)
     ${
       reviewInterval !== undefined && reviewInterval !== null
         ? `
-    newProject.reviewInterval = new Project.ReviewInterval(${reviewInterval.steps}, "${reviewInterval.unit}");
+    var ri = newProject.reviewInterval;
+    ri.steps = ${reviewInterval.steps};
+    ri.unit = "${reviewInterval.unit}";
+    newProject.reviewInterval = ri;
     `
         : reviewInterval === null
           ? 'newProject.reviewInterval = null;'
@@ -216,24 +218,9 @@ function generateOmniScript(params: CreateProjectInput): string {
  * @returns Promise with created project info or error
  */
 export async function createProject(params: CreateProjectInput): Promise<CreateProjectResponse> {
-  // Generate Omni Automation script
-  const script = generateOmniScript(params);
-
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'create_project', '.js');
-
   try {
-    // Execute via Omni Automation
-    const result = await executeOmniFocusScript(tempFile.path);
-
-    // Parse the result - executeOmniFocusScript already parses JSON
-    // Type narrowing: ensure result is a valid response
-    if (typeof result === 'string') {
-      // Fallback: if somehow it's a string, parse it
-      return JSON.parse(result) as CreateProjectResponse;
-    }
-
-    // Result is already parsed from JSON
+    const script = generateOmniScript(params);
+    const result = await executeOmniJS(script);
     return result as CreateProjectResponse;
   } catch (error: unknown) {
     logger.error('Error in createProject', 'createProject', { error });
@@ -242,8 +229,5 @@ export async function createProject(params: CreateProjectInput): Promise<CreateP
       success: false,
       error: errorMessage || 'Unknown error in createProject'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

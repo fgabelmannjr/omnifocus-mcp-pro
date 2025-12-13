@@ -1,31 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createProject } from '../../../src/tools/primitives/createProject.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../../src/utils/secureTempFile.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 describe('createProject', () => {
-  let capturedScript = '';
-
   beforeEach(() => {
     vi.clearAllMocks();
-    capturedScript = '';
-
-    // Mock writeSecureTempFile to capture the script
-    vi.mocked(writeSecureTempFile).mockImplementation((script, _prefix, _ext) => {
-      capturedScript = script;
-      return {
-        path: '/tmp/mock-script.js',
-        cleanup: vi.fn()
-      };
-    });
   });
 
   it('should create project at top level', async () => {
@@ -38,7 +21,7 @@ describe('createProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await createProject({ name: 'New Project' });
 
@@ -47,7 +30,7 @@ describe('createProject', () => {
       expect(result.project.id).toBe('project123');
       expect(result.project.name).toBe('New Project');
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   it('should create project in folder', async () => {
@@ -60,7 +43,7 @@ describe('createProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await createProject({
       name: 'New',
@@ -68,11 +51,12 @@ describe('createProject', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
 
     // Verify the script contains folder lookup logic
-    expect(capturedScript).toContain('Folder.byIdentifier');
-    expect(capturedScript).toContain('folder123');
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('Folder.byIdentifier');
+    expect(scriptContent).toContain('folder123');
   });
 
   it('should create project with sequential type', async () => {
@@ -85,7 +69,7 @@ describe('createProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await createProject({
       name: 'Sequential',
@@ -93,13 +77,14 @@ describe('createProject', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
 
     // Verify the script sets sequential=true and containsSingletonActions=false
-    expect(capturedScript).toContain('sequential');
-    expect(capturedScript).toContain('true');
-    expect(capturedScript).toContain('containsSingletonActions');
-    expect(capturedScript).toContain('false');
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('sequential');
+    expect(scriptContent).toContain('true');
+    expect(scriptContent).toContain('containsSingletonActions');
+    expect(scriptContent).toContain('false');
   });
 
   it('should create project with single-actions type', async () => {
@@ -112,7 +97,7 @@ describe('createProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await createProject({
       name: 'SAL',
@@ -120,13 +105,14 @@ describe('createProject', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
 
     // Verify the script sets sequential=false and containsSingletonActions=true
-    expect(capturedScript).toContain('sequential');
-    expect(capturedScript).toContain('false');
-    expect(capturedScript).toContain('containsSingletonActions');
-    expect(capturedScript).toContain('true');
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('sequential');
+    expect(scriptContent).toContain('false');
+    expect(scriptContent).toContain('containsSingletonActions');
+    expect(scriptContent).toContain('true');
   });
 
   it('should create project with both type flags (precedence)', async () => {
@@ -139,7 +125,7 @@ describe('createProject', () => {
       }
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await createProject({
       name: 'Both',
@@ -148,13 +134,14 @@ describe('createProject', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
 
     // Verify containsSingletonActions wins (sequential auto-cleared)
-    expect(capturedScript).toContain('containsSingletonActions');
-    expect(capturedScript).toContain('true');
+    const scriptContent = vi.mocked(executeOmniJS).mock.calls[0][0] as string;
+    expect(scriptContent).toContain('containsSingletonActions');
+    expect(scriptContent).toContain('true');
     // Sequential should be false when containsSingletonActions is true
-    const sequentialMatch = capturedScript.match(/sequential\s*=\s*(true|false)/);
+    const sequentialMatch = scriptContent.match(/sequential\s*=\s*(true|false)/);
     expect(sequentialMatch).toBeTruthy();
     if (sequentialMatch) {
       expect(sequentialMatch[1]).toBe('false');

@@ -1,8 +1,7 @@
 import type { RemoveFolderInput } from '../../contracts/folder-tools/remove-folder.js';
 import type { DisambiguationError } from '../../contracts/folder-tools/shared/disambiguation.js';
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Response type for removeFolder
@@ -111,12 +110,9 @@ export async function removeFolder(params: RemoveFolderInput): Promise<RemoveFol
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'remove_folder', '.js');
-
   try {
-    // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as RemoveFolderResponse;
+    // Execute via Omni Automation (stdin piping, no temp files)
+    const result = (await executeOmniJS(script)) as RemoveFolderResponse;
 
     // Pass through the result (success, error, or disambiguation)
     return result;
@@ -127,8 +123,5 @@ export async function removeFolder(params: RemoveFolderInput): Promise<RemoveFol
       success: false,
       error: errorMessage || 'Unknown error in removeFolder'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

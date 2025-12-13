@@ -1,6 +1,5 @@
 import type { ListTasksInput, ListTasksResponse } from '../../contracts/task-tools/list-tasks.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * List tasks with optional filtering.
@@ -10,14 +9,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function listTasks(params: ListTasksInput): Promise<ListTasksResponse> {
   const script = generateListTasksScript(params);
-  const tempFile = writeSecureTempFile(script, 'list_tasks', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as ListTasksResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as ListTasksResponse;
 }
 
 /**

@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { queryOmnifocus } from '../../../src/tools/primitives/queryOmnifocus.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('queryOmnifocus', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('queryOmnifocus', () => {
 
   describe('successful queries', () => {
     it('should query tasks successfully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [
           { id: 'task-1', name: 'Task 1', taskStatus: 'Available' },
           { id: 'task-2', name: 'Task 2', taskStatus: 'Available' }
@@ -46,7 +39,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should query projects successfully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'project-1', name: 'Project 1', status: 'Active' }],
         count: 1,
         error: null
@@ -59,7 +52,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should query folders successfully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'folder-1', name: 'Folder 1', projectCount: 5 }],
         count: 1,
         error: null
@@ -74,7 +67,7 @@ describe('queryOmnifocus', () => {
 
   describe('filtering', () => {
     it('should filter by projectName', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Task 1' }],
         count: 1,
         error: null
@@ -89,7 +82,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter by projectId', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Task 1' }],
         count: 1,
         error: null
@@ -104,7 +97,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter by tags', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Tagged Task' }],
         count: 1,
         error: null
@@ -119,7 +112,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter by status', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Overdue Task', taskStatus: 'Overdue' }],
         count: 1,
         error: null
@@ -134,7 +127,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter by flagged', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Flagged Task', flagged: true }],
         count: 1,
         error: null
@@ -149,7 +142,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter by dueWithin', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Due Soon Task' }],
         count: 1,
         error: null
@@ -164,7 +157,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter by hasNote', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Task with Note', note: 'Some note' }],
         count: 1,
         error: null
@@ -179,7 +172,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should filter projects by folderId', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'project-1', name: 'Project' }],
         count: 1,
         error: null
@@ -196,7 +189,7 @@ describe('queryOmnifocus', () => {
 
   describe('field selection', () => {
     it('should return specified fields only', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Task 1' }],
         count: 1,
         error: null
@@ -211,7 +204,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should return all fields when not specified', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [
           {
             id: 'task-1',
@@ -232,7 +225,7 @@ describe('queryOmnifocus', () => {
 
   describe('sorting', () => {
     it('should sort by specified field ascending', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [
           { id: 'task-1', name: 'A Task' },
           { id: 'task-2', name: 'B Task' }
@@ -251,7 +244,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should sort by specified field descending', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [
           { id: 'task-2', name: 'B Task' },
           { id: 'task-1', name: 'A Task' }
@@ -272,7 +265,7 @@ describe('queryOmnifocus', () => {
 
   describe('limit and summary', () => {
     it('should limit results', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Task 1' }],
         count: 1,
         error: null
@@ -287,7 +280,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should return only count in summary mode', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         count: 50,
         error: null
       });
@@ -305,7 +298,7 @@ describe('queryOmnifocus', () => {
 
   describe('include completed', () => {
     it('should exclude completed by default', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Active Task', taskStatus: 'Available' }],
         count: 1,
         error: null
@@ -317,7 +310,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should include completed when specified', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [
           { id: 'task-1', name: 'Active Task', taskStatus: 'Available' },
           { id: 'task-2', name: 'Completed Task', taskStatus: 'Completed' }
@@ -338,7 +331,7 @@ describe('queryOmnifocus', () => {
 
   describe('error handling', () => {
     it('should handle script errors', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'Script execution error'
       });
 
@@ -349,7 +342,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should handle execution exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('Connection failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('Connection failed'));
 
       const result = await queryOmnifocus({ entity: 'tasks' });
 
@@ -358,7 +351,7 @@ describe('queryOmnifocus', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await queryOmnifocus({ entity: 'tasks' });
 
@@ -369,7 +362,7 @@ describe('queryOmnifocus', () => {
 
   describe('combined options', () => {
     it('should handle multiple filters and options together', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         items: [{ id: 'task-1', name: 'Important Task' }],
         count: 1,
         error: null

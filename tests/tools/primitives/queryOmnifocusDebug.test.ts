@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { queryOmnifocusDebug } from '../../../src/tools/primitives/queryOmnifocusDebug.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('queryOmnifocusDebug', () => {
   beforeEach(() => {
@@ -28,7 +21,7 @@ describe('queryOmnifocusDebug', () => {
 
   describe('task entity', () => {
     it('should return task properties', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         entityType: 'task',
         itemName: 'Test Task',
         allProperties: {
@@ -55,7 +48,7 @@ describe('queryOmnifocusDebug', () => {
 
   describe('project entity', () => {
     it('should return project properties', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         entityType: 'project',
         itemName: 'Test Project',
         allProperties: {
@@ -79,7 +72,7 @@ describe('queryOmnifocusDebug', () => {
 
   describe('folder entity', () => {
     it('should return folder properties', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         entityType: 'folder',
         itemName: 'Test Folder',
         allProperties: {
@@ -101,7 +94,7 @@ describe('queryOmnifocusDebug', () => {
 
   describe('error handling', () => {
     it('should handle no items found', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'No items found'
       });
 
@@ -111,7 +104,7 @@ describe('queryOmnifocusDebug', () => {
     });
 
     it('should handle script errors', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'Script execution error'
       });
 
@@ -123,7 +116,7 @@ describe('queryOmnifocusDebug', () => {
 
   describe('property type detection', () => {
     it('should detect various property types', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         entityType: 'task',
         itemName: 'Type Test',
         allProperties: {

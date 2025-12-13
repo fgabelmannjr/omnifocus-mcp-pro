@@ -2,21 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_temp_file.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import type { OmnifocusDatabase } from '../../src/types.js';
 import { getCacheManager, resetCacheManager } from '../../src/utils/cacheManager.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('cacheManager', () => {
   beforeEach(() => {
@@ -155,12 +148,12 @@ describe('cacheManager', () => {
       const mockData = createMockDatabase();
 
       // First call returns initial checksum
-      mockExecuteOmniFocusScript.mockResolvedValueOnce({ checksum: 'checksum-1' });
+      mockExecuteOmniJS.mockResolvedValueOnce({ checksum: 'checksum-1' });
 
       await manager.set('checksum-key', mockData);
 
       // Second call returns different checksum (simulating database change)
-      mockExecuteOmniFocusScript.mockResolvedValueOnce({ checksum: 'checksum-2' });
+      mockExecuteOmniJS.mockResolvedValueOnce({ checksum: 'checksum-2' });
 
       const result = await manager.get('checksum-key');
 
@@ -172,7 +165,7 @@ describe('cacheManager', () => {
       const mockData = createMockDatabase();
 
       // Return same checksum both times
-      mockExecuteOmniFocusScript.mockResolvedValue({ checksum: 'same-checksum' });
+      mockExecuteOmniJS.mockResolvedValue({ checksum: 'same-checksum' });
 
       await manager.set('same-checksum-key', mockData);
       const result = await manager.get('same-checksum-key');
@@ -186,12 +179,12 @@ describe('cacheManager', () => {
       const mockData = createMockDatabase();
 
       // First call for set
-      mockExecuteOmniFocusScript.mockResolvedValueOnce({ checksum: 'initial' });
+      mockExecuteOmniJS.mockResolvedValueOnce({ checksum: 'initial' });
 
       await manager.set('error-key', mockData);
 
       // Error on get checksum
-      mockExecuteOmniFocusScript.mockRejectedValueOnce(new Error('Checksum failed'));
+      mockExecuteOmniJS.mockRejectedValueOnce(new Error('Checksum failed'));
 
       const result = await manager.get('error-key');
 

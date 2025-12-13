@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { addFolder } from '../../src/tools/primitives/addFolder.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('addFolder', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('addFolder', () => {
 
   describe('successful folder creation', () => {
     it('should create folder with name only (default position at library ending)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-123',
         name: 'Work'
@@ -42,11 +35,11 @@ describe('addFolder', () => {
         expect(result.id).toBe('folder-123');
         expect(result.name).toBe('Work');
       }
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should create folder at library beginning', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-456',
         name: 'Personal'
@@ -64,7 +57,7 @@ describe('addFolder', () => {
     });
 
     it('should create folder at library ending', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-789',
         name: 'Archive'
@@ -79,7 +72,7 @@ describe('addFolder', () => {
     });
 
     it('should create folder inside parent folder (beginning)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-child',
         name: 'Projects'
@@ -97,7 +90,7 @@ describe('addFolder', () => {
     });
 
     it('should create folder inside parent folder (ending)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-child-2',
         name: 'Resources'
@@ -112,7 +105,7 @@ describe('addFolder', () => {
     });
 
     it('should create folder before sibling', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-new',
         name: 'New Folder'
@@ -127,7 +120,7 @@ describe('addFolder', () => {
     });
 
     it('should create folder after sibling', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-new-2',
         name: 'Another Folder'
@@ -142,7 +135,7 @@ describe('addFolder', () => {
     });
 
     it('should trim whitespace from folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-trimmed',
         name: 'Trimmed Name'
@@ -159,7 +152,7 @@ describe('addFolder', () => {
 
   describe('special characters in names', () => {
     it('should handle quotes in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-quotes',
         name: "John's Projects"
@@ -174,7 +167,7 @@ describe('addFolder', () => {
     });
 
     it('should handle double quotes in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-dquotes',
         name: 'Project "Alpha"'
@@ -189,7 +182,7 @@ describe('addFolder', () => {
     });
 
     it('should handle slashes in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-slash',
         name: 'Work/Personal'
@@ -204,7 +197,7 @@ describe('addFolder', () => {
     });
 
     it('should handle backslashes in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-backslash',
         name: 'C:\\Projects'
@@ -219,7 +212,7 @@ describe('addFolder', () => {
     });
 
     it('should handle Unicode characters in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-unicode',
         name: '工作任务'
@@ -234,7 +227,7 @@ describe('addFolder', () => {
     });
 
     it('should handle emoji in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-emoji',
         name: '📁 Work'
@@ -249,7 +242,7 @@ describe('addFolder', () => {
     });
 
     it('should handle ampersand in folder name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-ampersand',
         name: 'Work & Personal'
@@ -266,7 +259,7 @@ describe('addFolder', () => {
 
   describe('error handling', () => {
     it('should return error for invalid relativeTo folder (not found)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid relativeTo 'xyz': folder not found"
       });
@@ -284,7 +277,7 @@ describe('addFolder', () => {
     });
 
     it('should return error for invalid sibling position (wrong parent)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid relativeTo 'folder-wrong': folder is not a sibling in target parent"
       });
@@ -301,7 +294,7 @@ describe('addFolder', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await addFolder({ name: 'Test' });
 
@@ -312,7 +305,7 @@ describe('addFolder', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -326,7 +319,7 @@ describe('addFolder', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await addFolder({ name: 'Test' });
 
@@ -336,7 +329,7 @@ describe('addFolder', () => {
 
   describe('response properties', () => {
     it('should return folder with all required fields', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-full',
         name: 'Complete Folder'

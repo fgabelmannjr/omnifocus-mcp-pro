@@ -1,6 +1,5 @@
 import type { CreateTagInput, CreateTagResponse } from '../../contracts/tag-tools/create-tag.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Escape a string for safe use in JavaScript string literals.
@@ -23,14 +22,8 @@ function escapeForJS(str: string): string {
  */
 export async function createTag(params: CreateTagInput): Promise<CreateTagResponse> {
   const script = generateCreateTagScript(params);
-  const tempFile = writeSecureTempFile(script, 'create_tag', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as CreateTagResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as CreateTagResponse;
 }
 
 /**

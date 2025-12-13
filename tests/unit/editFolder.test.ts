@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { editFolder } from '../../src/tools/primitives/editFolder.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('editFolder', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('editFolder', () => {
 
   describe('successful updates by ID', () => {
     it('should update folder name by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-123',
         name: 'New Name'
@@ -45,11 +38,11 @@ describe('editFolder', () => {
         expect(result.id).toBe('folder-123');
         expect(result.name).toBe('New Name');
       }
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should update folder status by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-456',
         name: 'Archive'
@@ -67,7 +60,7 @@ describe('editFolder', () => {
     });
 
     it('should update both name and status by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-789',
         name: 'Active Folder'
@@ -85,7 +78,7 @@ describe('editFolder', () => {
 
   describe('successful updates by name', () => {
     it('should update folder name when found by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-found',
         name: 'Updated Name'
@@ -103,7 +96,7 @@ describe('editFolder', () => {
     });
 
     it('should update folder status when found by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-status',
         name: 'Work'
@@ -120,7 +113,7 @@ describe('editFolder', () => {
 
   describe('disambiguation scenarios', () => {
     it('should return disambiguation error for multiple name matches', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Ambiguous name 'Archive': found 3 matches",
         code: 'DISAMBIGUATION_REQUIRED',
@@ -145,7 +138,7 @@ describe('editFolder', () => {
     });
 
     it('should return disambiguation with two matches', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Ambiguous name 'Work': found 2 matches",
         code: 'DISAMBIGUATION_REQUIRED',
@@ -166,7 +159,7 @@ describe('editFolder', () => {
 
   describe('error handling', () => {
     it('should return error for invalid ID (not found)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid id 'xyz': folder not found"
       });
@@ -184,7 +177,7 @@ describe('editFolder', () => {
     });
 
     it('should return error for invalid name (not found)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid name 'Nonexistent': folder not found"
       });
@@ -202,7 +195,7 @@ describe('editFolder', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await editFolder({
         id: 'folder-123',
@@ -216,7 +209,7 @@ describe('editFolder', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -233,7 +226,7 @@ describe('editFolder', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await editFolder({
         id: 'folder-123',
@@ -246,7 +239,7 @@ describe('editFolder', () => {
 
   describe('ID takes precedence over name', () => {
     it('should use ID when both ID and name provided', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-123',
         name: 'Updated'
@@ -267,7 +260,7 @@ describe('editFolder', () => {
 
   describe('special characters in names', () => {
     it('should handle quotes in newName', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-quotes',
         name: "John's Projects"
@@ -285,7 +278,7 @@ describe('editFolder', () => {
     });
 
     it('should handle double quotes in newName', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-dquotes',
         name: 'Project "Alpha"'
@@ -300,7 +293,7 @@ describe('editFolder', () => {
     });
 
     it('should handle Unicode in newName', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-unicode',
         name: '工作任务'
@@ -318,7 +311,7 @@ describe('editFolder', () => {
     });
 
     it('should handle emoji in newName', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-emoji',
         name: '📁 Work'
@@ -335,7 +328,7 @@ describe('editFolder', () => {
 
   describe('response properties', () => {
     it('should return folder with all required fields', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-full',
         name: 'Complete Folder'

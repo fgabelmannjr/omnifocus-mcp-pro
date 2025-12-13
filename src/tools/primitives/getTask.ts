@@ -1,6 +1,5 @@
 import type { GetTaskInput, GetTaskResponse } from '../../contracts/task-tools/get-task.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Get a single task by ID or name.
@@ -10,14 +9,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function getTask(params: GetTaskInput): Promise<GetTaskResponse> {
   const script = generateGetTaskScript(params);
-  const tempFile = writeSecureTempFile(script, 'get_task', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as GetTaskResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as GetTaskResponse;
 }
 
 /**

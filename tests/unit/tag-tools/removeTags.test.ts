@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { removeTags } from '../../../src/tools/primitives/removeTags.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-// Mock executeOmniFocusScript
+// Mock executeOmniJS
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 describe('removeTags', () => {
@@ -14,23 +14,21 @@ describe('removeTags', () => {
 
   // T083: Remove specific tags
   it('should remove specific tags from tasks', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task1',
-            taskName: 'Test Task 1',
-            success: true
-          },
-          {
-            taskId: 'task2',
-            taskName: 'Test Task 2',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task1',
+          taskName: 'Test Task 1',
+          success: true
+        },
+        {
+          taskId: 'task2',
+          taskName: 'Test Task 2',
+          success: true
+        }
+      ]
+    });
 
     const result = await removeTags({
       taskIds: ['task1', 'task2'],
@@ -45,18 +43,16 @@ describe('removeTags', () => {
 
   // T084: clearAll mode (task.clearTags())
   it('should clear all tags when clearAll is true', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task1',
-            taskName: 'Test Task',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task1',
+          taskName: 'Test Task',
+          success: true
+        }
+      ]
+    });
 
     const result = await removeTags({
       taskIds: ['task1'],
@@ -67,35 +63,33 @@ describe('removeTags', () => {
     expect(result.results).toHaveLength(1);
     expect(result.results?.[0].success).toBe(true);
 
-    // Verify executeOmniFocusScript was called
-    expect(vi.mocked(executeOmniFocusScript)).toHaveBeenCalledTimes(1);
+    // Verify executeOmniJS was called
+    expect(vi.mocked(executeOmniJS)).toHaveBeenCalledTimes(1);
   });
 
   // T085: Per-item failures (continue on error)
   it('should continue processing on per-item failures', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task1',
-            taskName: 'Test Task 1',
-            success: true
-          },
-          {
-            taskId: 'task2',
-            taskName: '',
-            success: false,
-            error: "Task 'task2' not found"
-          },
-          {
-            taskId: 'task3',
-            taskName: 'Test Task 3',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task1',
+          taskName: 'Test Task 1',
+          success: true
+        },
+        {
+          taskId: 'task2',
+          taskName: '',
+          success: false,
+          error: "Task 'task2' not found"
+        },
+        {
+          taskId: 'task3',
+          taskName: 'Test Task 3',
+          success: true
+        }
+      ]
+    });
 
     const result = await removeTags({
       taskIds: ['task1', 'task2', 'task3'],
@@ -112,21 +106,19 @@ describe('removeTags', () => {
 
   // T086: Disambiguation errors
   it('should return disambiguation errors for ambiguous task names', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'ambiguous',
-            taskName: '',
-            success: false,
-            code: 'DISAMBIGUATION_REQUIRED',
-            matchingIds: ['id1', 'id2'],
-            error: "Ambiguous task name 'Task'. Found 2 matches: id1, id2"
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'ambiguous',
+          taskName: '',
+          success: false,
+          code: 'DISAMBIGUATION_REQUIRED',
+          matchingIds: ['id1', 'id2'],
+          error: "Ambiguous task name 'Task'. Found 2 matches: id1, id2"
+        }
+      ]
+    });
 
     const result = await removeTags({
       taskIds: ['ambiguous'],
@@ -141,14 +133,12 @@ describe('removeTags', () => {
   });
 
   it('should return disambiguation errors for ambiguous tag names', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: false,
-        error: "Ambiguous tag name 'Urgent'. Found 2 matches: tag1, tag2",
-        code: 'DISAMBIGUATION_REQUIRED',
-        matchingIds: ['tag1', 'tag2']
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: false,
+      error: "Ambiguous tag name 'Urgent'. Found 2 matches: tag1, tag2",
+      code: 'DISAMBIGUATION_REQUIRED',
+      matchingIds: ['tag1', 'tag2']
+    });
 
     const result = await removeTags({
       taskIds: ['task1'],
@@ -161,18 +151,16 @@ describe('removeTags', () => {
 
   // T087: Idempotency (tag not assigned)
   it('should succeed silently when removing a tag that is not assigned (idempotent)', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: true,
-        results: [
-          {
-            taskId: 'task1',
-            taskName: 'Test Task',
-            success: true
-          }
-        ]
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: true,
+      results: [
+        {
+          taskId: 'task1',
+          taskName: 'Test Task',
+          success: true
+        }
+      ]
+    });
 
     const result = await removeTags({
       taskIds: ['task1'],
@@ -188,12 +176,10 @@ describe('removeTags', () => {
   // T088: Error - clearAll + tagIds conflict (should be caught by schema, but test primitive behavior)
   it('should handle clearAll + tagIds conflict gracefully', async () => {
     // This should be caught by schema validation, but if it somehow reaches the primitive:
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: false,
-        error: 'Cannot specify both clearAll and tagIds'
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: false,
+      error: 'Cannot specify both clearAll and tagIds'
+    });
 
     const result = await removeTags({
       taskIds: ['task1'],
@@ -206,12 +192,10 @@ describe('removeTags', () => {
   });
 
   it('should handle tag not found error', async () => {
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(
-      JSON.stringify({
-        success: false,
-        error: "Tag 'nonexistent' not found"
-      })
-    );
+    vi.mocked(executeOmniJS).mockResolvedValue({
+      success: false,
+      error: "Tag 'nonexistent' not found"
+    });
 
     const result = await removeTags({
       taskIds: ['task1'],
@@ -223,7 +207,7 @@ describe('removeTags', () => {
   });
 
   it('should handle script execution errors', async () => {
-    vi.mocked(executeOmniFocusScript).mockRejectedValue(new Error('Script execution failed'));
+    vi.mocked(executeOmniJS).mockRejectedValue(new Error('Script execution failed'));
 
     await expect(
       removeTags({

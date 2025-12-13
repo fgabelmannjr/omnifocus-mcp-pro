@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Import will fail until primitive exists - that's expected for TDD
 // @ts-expect-error - Primitive doesn't exist yet (TDD RED phase)
 import { deleteProject } from '../../../src/tools/primitives/deleteProject.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T049: deleteProject removes project by ID
@@ -22,7 +22,7 @@ describe('deleteProject', () => {
       message: 'Project "Old Project" deleted (3 tasks removed)'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ id: 'proj123' });
 
@@ -33,7 +33,7 @@ describe('deleteProject', () => {
       expect(result.message).toContain('deleted');
       expect(result.message).toContain('tasks removed');
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   // T050: deleteProject removes project by name
@@ -45,7 +45,7 @@ describe('deleteProject', () => {
       message: 'Project "Old Project" deleted (5 tasks removed)'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ name: 'Old Project' });
 
@@ -55,7 +55,7 @@ describe('deleteProject', () => {
       expect(result.name).toBe('Old Project');
       expect(result.message).toContain('deleted');
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   // T051: deleteProject returns not found error
@@ -65,7 +65,7 @@ describe('deleteProject', () => {
       error: "Project 'proj123' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ id: 'proj123' });
 
@@ -73,7 +73,7 @@ describe('deleteProject', () => {
     if (!result.success) {
       expect(result.error).toBe("Project 'proj123' not found");
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   it('should return not found error when project does not exist by name', async () => {
@@ -82,7 +82,7 @@ describe('deleteProject', () => {
       error: "Project 'NonExistent' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ name: 'NonExistent' });
 
@@ -90,7 +90,7 @@ describe('deleteProject', () => {
     if (!result.success) {
       expect(result.error).toBe("Project 'NonExistent' not found");
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   // T052: deleteProject returns disambiguation error
@@ -102,7 +102,7 @@ describe('deleteProject', () => {
       matchingIds: ['proj1', 'proj2']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ name: 'Duplicate' });
 
@@ -113,7 +113,7 @@ describe('deleteProject', () => {
       expect(result.matchingIds.length).toBeGreaterThanOrEqual(2);
       expect(result.error).toContain('Ambiguous project name');
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   it('should cascade delete all child tasks', async () => {
@@ -125,7 +125,7 @@ describe('deleteProject', () => {
       message: 'Project "Project with Tasks" deleted (15 tasks removed)'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ id: 'proj789' });
 
@@ -135,7 +135,7 @@ describe('deleteProject', () => {
       expect(result.name).toBe('Project with Tasks');
       expect(result.message).toContain('15 tasks removed');
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   it('should handle empty project deletion (0 tasks)', async () => {
@@ -146,7 +146,7 @@ describe('deleteProject', () => {
       message: 'Project "Empty Project" deleted (0 tasks removed)'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ id: 'proj999' });
 
@@ -156,7 +156,7 @@ describe('deleteProject', () => {
       expect(result.name).toBe('Empty Project');
       expect(result.message).toContain('0 tasks removed');
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 
   it('should handle script execution errors gracefully', async () => {
@@ -165,7 +165,7 @@ describe('deleteProject', () => {
       error: 'Unexpected error in OmniJS script'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await deleteProject({ id: 'proj123' });
 
@@ -173,6 +173,6 @@ describe('deleteProject', () => {
     if (!result.success) {
       expect(result.error).toBeTruthy();
     }
-    expect(executeOmniFocusScript).toHaveBeenCalledOnce();
+    expect(executeOmniJS).toHaveBeenCalledOnce();
   });
 });

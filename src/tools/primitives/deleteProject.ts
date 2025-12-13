@@ -3,8 +3,7 @@ import type {
   DeleteProjectResponse
 } from '../../contracts/project-tools/index.js';
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Generate Omni Automation JavaScript for deleting a project
@@ -107,24 +106,9 @@ function generateOmniScript(params: DeleteProjectInput): string {
  * @returns Promise with deleted project info (including cascade message), disambiguation error, or standard error
  */
 export async function deleteProject(params: DeleteProjectInput): Promise<DeleteProjectResponse> {
-  // Generate Omni Automation script
-  const script = generateOmniScript(params);
-
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'delete_project', '.js');
-
   try {
-    // Execute via Omni Automation
-    const result = await executeOmniFocusScript(tempFile.path);
-
-    // Parse the result - executeOmniFocusScript already parses JSON
-    // Type narrowing: ensure result is a valid response
-    if (typeof result === 'string') {
-      // Fallback: if somehow it's a string, parse it
-      return JSON.parse(result) as DeleteProjectResponse;
-    }
-
-    // Result is already parsed from JSON
+    const script = generateOmniScript(params);
+    const result = await executeOmniJS(script);
     return result as DeleteProjectResponse;
   } catch (error: unknown) {
     logger.error('Error in deleteProject', 'deleteProject', { error });
@@ -133,8 +117,5 @@ export async function deleteProject(params: DeleteProjectInput): Promise<DeleteP
       success: false,
       error: errorMessage || 'Unknown error in deleteProject'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }
