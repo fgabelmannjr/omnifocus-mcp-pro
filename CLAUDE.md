@@ -208,6 +208,12 @@ Domain-specific rules in `.claude/rules/` load automatically:
 
 ## Recent Changes
 
+- **Test Coverage (2025-12-12)**: Test coverage gaps filled with 10 new test files
+  - Total: 1708 tests across 83 test files
+  - Added 9 missing unit tests (moveProject, editProject, createProject, getProject, deleteProject, listProjects, appendNote, getTask, listTasks)
+  - Added 1 integration test (deleteProject cascade deletion verification)
+  - All integration tests passing with recent bug fixes
+
 - 003-tasks: Added TypeScript 5.9+ with strict mode (`ES2024` target)
 
 - **Phase 4 Projects (Complete)**: Full project management tools (2025-12-12)

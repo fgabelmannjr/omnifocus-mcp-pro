@@ -91,6 +91,7 @@ describe('moveFolder integration', () => {
   it('should move folder before sibling', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     // Create two folders
     const firstId = await createTestFolder(`MoveFolder Test - First ${Date.now()}`);
@@ -106,7 +107,7 @@ describe('moveFolder integration', () => {
 
     // Verify order
     await waitForSync();
-    const listResult = await listFolders({ parentId: testFolderId! });
+    const listResult = await listFolders({ parentId: testFolderId });
     expect(listResult.success).toBe(true);
     if (listResult.success) {
       const folders = listResult.folders.filter((f) => f.id === firstId || f.id === secondId);
@@ -123,7 +124,7 @@ describe('moveFolder integration', () => {
     // Create two folders, then a third
     const firstId = await createTestFolder(`MoveFolder Test - A ${Date.now()}`);
     const secondId = await createTestFolder(`MoveFolder Test - B ${Date.now()}`);
-    const thirdId = await createTestFolder(`MoveFolder Test - C ${Date.now()}`);
+    await createTestFolder(`MoveFolder Test - C ${Date.now()}`);
 
     // Move first after second (so order becomes: second, first, third)
     const result = await moveFolder({
@@ -171,10 +172,11 @@ describe('moveFolder integration', () => {
 
   it('should return error for non-existent folder ID', async () => {
     const testFolderId = getTestFolderId();
+    if (!testFolderId) return;
 
     const result = await moveFolder({
       id: 'nonexistent-folder-id-12345',
-      position: { placement: 'ending', relativeTo: testFolderId! }
+      position: { placement: 'ending', relativeTo: testFolderId }
     });
 
     expect(result.success).toBe(false);
@@ -199,6 +201,7 @@ describe('moveFolder integration', () => {
 
   it('should return disambiguation error for ambiguous name', async () => {
     const testFolderId = getTestFolderId();
+    if (!testFolderId) return;
     const duplicateName = `MoveFolder Test - Duplicate ${Date.now()}`;
 
     const id1 = await createTestFolder(duplicateName);
@@ -206,7 +209,7 @@ describe('moveFolder integration', () => {
 
     const result = await moveFolder({
       name: duplicateName,
-      position: { placement: 'ending', relativeTo: testFolderId! }
+      position: { placement: 'ending', relativeTo: testFolderId }
     });
 
     expect(result.success).toBe(false);
@@ -234,7 +237,8 @@ describe('moveFolder integration', () => {
 
     // Verify it's now at root level (not inside test folder)
     await waitForSync();
-    const listResult = await listFolders({ parentId: testFolderId! });
+    if (!testFolderId) return;
+    const listResult = await listFolders({ parentId: testFolderId });
     expect(listResult.success).toBe(true);
     if (listResult.success) {
       const found = listResult.folders.find((f) => f.id === folderId);

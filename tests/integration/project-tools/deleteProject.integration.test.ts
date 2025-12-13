@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { addOmniFocusTask } from '../../../src/tools/primitives/addOmniFocusTask.js';
 import { createProject } from '../../../src/tools/primitives/createProject.js';
 import { deleteProject } from '../../../src/tools/primitives/deleteProject.js';

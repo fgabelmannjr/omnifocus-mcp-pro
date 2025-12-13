@@ -48,12 +48,13 @@ describe('addFolder integration', () => {
   it('should create folder as child of test folder', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const uniqueName = `AddFolder Test - Child ${Date.now()}`;
 
     const result = await addFolder({
       name: uniqueName,
-      position: { placement: 'ending', relativeTo: testFolderId! }
+      position: { placement: 'ending', relativeTo: testFolderId }
     });
 
     expect(result.success).toBe(true);
@@ -63,7 +64,7 @@ describe('addFolder integration', () => {
 
       // Verify parent relationship
       await waitForSync();
-      const listResult = await listFolders({ parentId: testFolderId! });
+      const listResult = await listFolders({ parentId: testFolderId });
       expect(listResult.success).toBe(true);
       if (listResult.success) {
         const found = listResult.folders.find((f) => f.id === result.id);
@@ -75,6 +76,7 @@ describe('addFolder integration', () => {
   it('should create folder at beginning of parent', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     // Create two folders - second at beginning should appear first
     const firstName = `AddFolder Test - First ${Date.now()}`;
@@ -82,21 +84,21 @@ describe('addFolder integration', () => {
 
     const first = await addFolder({
       name: firstName,
-      position: { placement: 'ending', relativeTo: testFolderId! }
+      position: { placement: 'ending', relativeTo: testFolderId }
     });
     expect(first.success).toBe(true);
     if (first.success) createdFolderIds.push(first.id);
 
     const second = await addFolder({
       name: secondName,
-      position: { placement: 'beginning', relativeTo: testFolderId! }
+      position: { placement: 'beginning', relativeTo: testFolderId }
     });
     expect(second.success).toBe(true);
     if (second.success) createdFolderIds.push(second.id);
 
     // Verify order - second should be before first
     await waitForSync();
-    const listResult = await listFolders({ parentId: testFolderId! });
+    const listResult = await listFolders({ parentId: testFolderId });
     expect(listResult.success).toBe(true);
     if (listResult.success && first.success && second.success) {
       const folders = listResult.folders.filter((f) => f.id === first.id || f.id === second.id);
@@ -111,12 +113,13 @@ describe('addFolder integration', () => {
   it('should create folder before sibling', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     // Create reference folder first
     const refName = `AddFolder Test - Reference ${Date.now()}`;
     const refResult = await addFolder({
       name: refName,
-      position: { placement: 'ending', relativeTo: testFolderId! }
+      position: { placement: 'ending', relativeTo: testFolderId }
     });
     expect(refResult.success).toBe(true);
     if (refResult.success) createdFolderIds.push(refResult.id);
@@ -134,12 +137,13 @@ describe('addFolder integration', () => {
   it('should create folder after sibling', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     // Create reference folder first
     const refName = `AddFolder Test - Reference After ${Date.now()}`;
     const refResult = await addFolder({
       name: refName,
-      position: { placement: 'ending', relativeTo: testFolderId! }
+      position: { placement: 'ending', relativeTo: testFolderId }
     });
     expect(refResult.success).toBe(true);
     if (refResult.success) createdFolderIds.push(refResult.id);

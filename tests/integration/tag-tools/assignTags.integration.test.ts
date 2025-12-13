@@ -207,7 +207,7 @@ describe('assignTags integration', () => {
     // Create two tasks with same name
     const duplicateName = `DuplicateTaskName ${Date.now()}`;
     const task1Id = await createTaskLocal(duplicateName);
-    const task2Id = await createTaskLocal(duplicateName);
+    await createTaskLocal(duplicateName);
 
     // Try to assign by name (will be ambiguous in implementation)
     // Note: This test assumes the primitive accepts names, which may vary

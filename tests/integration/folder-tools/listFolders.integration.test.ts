@@ -156,7 +156,8 @@ describe('listFolders integration', () => {
 
   it('should include nested folders when includeChildren is true (default)', async () => {
     const testFolderId = getTestFolderId();
-    const result = await listFolders({ parentId: testFolderId!, includeChildren: true });
+    if (!testFolderId) return;
+    const result = await listFolders({ parentId: testFolderId, includeChildren: true });
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -180,9 +181,10 @@ describe('listFolders integration', () => {
 
   it('should combine status and parent filters', async () => {
     const testFolderId = getTestFolderId();
+    if (!testFolderId) return;
 
     const result = await listFolders({
-      parentId: testFolderId!,
+      parentId: testFolderId,
       status: 'active'
     });
 

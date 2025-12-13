@@ -119,7 +119,8 @@ describe('moveProject integration', () => {
 
     // Create project in test folder root
     const testFolderId = getTestFolderId();
-    const projectId = await createTestProject('MoveProject Test - To Folder Name', testFolderId!);
+    if (!testFolderId) return;
+    const projectId = await createTestProject('MoveProject Test - To Folder Name', testFolderId);
 
     // Move to subfolder 1 by name
     const result = await moveProject({

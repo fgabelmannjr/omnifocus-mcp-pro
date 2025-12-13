@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createProject } from '../../../src/tools/primitives/createProject.js';
 import { deleteProject } from '../../../src/tools/primitives/deleteProject.js';
 import { getProject } from '../../../src/tools/primitives/getProject.js';
@@ -25,10 +25,11 @@ describe('createProject integration', () => {
   it('should create project with default settings in test folder', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - Default Settings',
-      folderId: testFolderId!
+      folderId: testFolderId
     });
 
     expect(result.success).toBe(true);
@@ -52,10 +53,11 @@ describe('createProject integration', () => {
   it('should create sequential project', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - Sequential',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       sequential: true
     });
 
@@ -76,10 +78,11 @@ describe('createProject integration', () => {
   it('should create single-actions project', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - Single Actions',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       containsSingletonActions: true
     });
 
@@ -100,10 +103,11 @@ describe('createProject integration', () => {
   it('should apply auto-clear when both type flags set (containsSingletonActions wins)', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - Both Flags',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       sequential: true,
       containsSingletonActions: true
     });
@@ -126,13 +130,14 @@ describe('createProject integration', () => {
   it('should create project with dates', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const deferDate = '2025-02-01T09:00:00.000Z';
     const dueDate = '2025-02-28T17:00:00.000Z';
 
     const result = await createProject({
       name: 'Integration Test - With Dates',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       deferDate,
       dueDate
     });
@@ -156,10 +161,11 @@ describe('createProject integration', () => {
   it('should create project with review interval', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - With Review',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       reviewInterval: { steps: 7, unit: 'days' }
     });
 
@@ -183,10 +189,11 @@ describe('createProject integration', () => {
   it('should create project with note', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - With Note',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       note: 'This is a test note for the integration test project.'
     });
 
@@ -205,10 +212,11 @@ describe('createProject integration', () => {
   it('should create flagged project', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - Flagged',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       flagged: true
     });
 
@@ -248,10 +256,11 @@ describe('createProject integration', () => {
   it('should create project with OnHold status', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await createProject({
       name: 'Integration Test - OnHold',
-      folderId: testFolderId!,
+      folderId: testFolderId,
       status: 'OnHold'
     });
 

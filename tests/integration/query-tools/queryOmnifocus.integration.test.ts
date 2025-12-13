@@ -106,7 +106,7 @@ describe('queryOmnifocus integration', () => {
     if (result.success && result.items) {
       // All returned tasks should have notes
       const items = result.items as Array<{ note?: string }>;
-      items.forEach((item) => {
+      items.forEach((_item) => {
         // Note may or may not be included in default fields
         // The filter should work regardless
       });

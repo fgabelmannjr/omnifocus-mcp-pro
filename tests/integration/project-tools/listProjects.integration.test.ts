@@ -91,8 +91,9 @@ describe('listProjects integration', () => {
   it('should list projects in specific folder by ID', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
-    const result = await listProjects({ folderId: testFolderId! });
+    const result = await listProjects({ folderId: testFolderId });
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -112,9 +113,10 @@ describe('listProjects integration', () => {
   it('should filter by Active status only', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       status: ['Active']
     });
 
@@ -133,9 +135,10 @@ describe('listProjects integration', () => {
   it('should filter by OnHold status', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       status: ['OnHold'],
       includeCompleted: true
     });
@@ -155,9 +158,10 @@ describe('listProjects integration', () => {
   it('should filter flagged projects only', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       flagged: true
     });
 
@@ -178,9 +182,10 @@ describe('listProjects integration', () => {
   it('should respect limit parameter', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       limit: 2
     });
 
@@ -193,9 +198,10 @@ describe('listProjects integration', () => {
   it('should filter by due date (dueBefore)', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       dueBefore: '2025-12-31T23:59:59.000Z'
     });
 
@@ -211,10 +217,11 @@ describe('listProjects integration', () => {
   it('should combine multiple filters with AND logic', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     // Filter: Active status AND in test folder
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       status: ['Active'],
       flagged: false
     });
@@ -233,9 +240,10 @@ describe('listProjects integration', () => {
   it('should return project summary with expected properties', async () => {
     const testFolderId = getTestFolderId();
     expect(testFolderId).toBeTruthy();
+    if (!testFolderId) return;
 
     const result = await listProjects({
-      folderId: testFolderId!,
+      folderId: testFolderId,
       limit: 1
     });
 
