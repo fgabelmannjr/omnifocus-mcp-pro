@@ -80,10 +80,6 @@ jobs:
           # Verify type declarations
           [ -f "dist/server.d.ts" ] || { echo "❌ dist/server.d.ts not found"; exit 1; }
 
-          # Verify JXA scripts copied
-          [ -d "dist/utils/omnifocusScripts" ] || { echo "❌ JXA scripts not copied"; exit 1; }
-          [ -f "dist/utils/omnifocusScripts/omnifocusDump.js" ] || { echo "❌ omnifocusDump.js missing"; exit 1; }
-
           echo "✅ Build artifacts verified"
 
       - name: Publish to npm

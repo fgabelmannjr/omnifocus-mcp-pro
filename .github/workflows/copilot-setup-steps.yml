@@ -54,10 +54,6 @@ jobs:
           # Verify server.js exists
           [ -f "dist/server.js" ] || { echo "❌ dist/server.js not found"; exit 1; }
 
-          # Verify JXA scripts copied
-          [ -d "dist/utils/omnifocusScripts" ] || { echo "❌ JXA scripts not copied"; exit 1; }
-          [ -f "dist/utils/omnifocusScripts/omnifocusDump.js" ] || { echo "❌ omnifocusDump.js missing"; exit 1; }
-
           echo "✅ All build artifacts verified"
 
       - name: Run TypeScript check
@@ -83,6 +79,5 @@ jobs:
           [ -f "src/server.ts" ] || { echo "❌ src/server.ts missing"; exit 1; }
           [ -d "src/tools/definitions" ] || { echo "❌ src/tools/definitions directory missing"; exit 1; }
           [ -d "src/tools/primitives" ] || { echo "❌ src/tools/primitives directory missing"; exit 1; }
-          [ -d "src/utils/omnifocusScripts" ] || { echo "❌ JXA scripts directory missing"; exit 1; }
 
           echo "✅ MCP server structure validated"
