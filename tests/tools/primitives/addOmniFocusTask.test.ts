@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { addOmniFocusTask } from '../../../src/tools/primitives/addOmniFocusTask.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('addOmniFocusTask', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('addOmniFocusTask', () => {
 
   describe('successful task creation', () => {
     it('should create a task in inbox successfully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: 'task-123',
         name: 'Test Task',
@@ -41,11 +34,11 @@ describe('addOmniFocusTask', () => {
       expect(result.success).toBe(true);
       expect(result.taskId).toBe('task-123');
       expect(result.placement).toBe('inbox');
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should create a task in a project', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: 'task-456',
         name: 'Project Task',
@@ -62,7 +55,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should create a task with all options', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: 'task-789',
         name: 'Full Task',
@@ -85,7 +78,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should create a task under a parent task by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: 'subtask-123',
         name: 'Subtask',
@@ -102,7 +95,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should create a task under a parent task by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: 'subtask-456',
         name: 'Named Subtask',
@@ -121,7 +114,7 @@ describe('addOmniFocusTask', () => {
 
   describe('error handling', () => {
     it('should handle project not found error', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Project not found: NonExistent'
       });
@@ -136,7 +129,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await addOmniFocusTask({ name: 'Task' });
 
@@ -145,7 +138,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -157,7 +150,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await addOmniFocusTask({ name: 'Task' });
 
@@ -167,7 +160,7 @@ describe('addOmniFocusTask', () => {
 
   describe('input sanitization', () => {
     it('should handle task name with special characters', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: '123',
         name: 'Task with special chars',
@@ -182,7 +175,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle empty note gracefully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: '123',
         name: 'Task',
@@ -198,7 +191,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle tags', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: '123',
         name: 'Task',
@@ -216,7 +209,7 @@ describe('addOmniFocusTask', () => {
 
   describe('date handling', () => {
     it('should handle due date only', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: '123',
         name: 'Task',
@@ -232,7 +225,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle defer date only', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: '123',
         name: 'Task',
@@ -248,7 +241,7 @@ describe('addOmniFocusTask', () => {
     });
 
     it('should handle both due and defer dates', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         taskId: '123',
         name: 'Task',

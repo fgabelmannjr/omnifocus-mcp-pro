@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 import { listPerspectives } from '../../../src/tools/primitives/listPerspectives.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('listPerspectives', () => {
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe('listPerspectives', () => {
 
   describe('successful listing', () => {
     it('should list all perspectives by default', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: mockPerspectives
       });
 
@@ -65,7 +65,7 @@ describe('listPerspectives', () => {
     });
 
     it('should list with default parameters when called with empty object', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: mockPerspectives
       });
 
@@ -76,7 +76,7 @@ describe('listPerspectives', () => {
     });
 
     it('should include both builtin and custom when both true', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: mockPerspectives
       });
 
@@ -92,7 +92,7 @@ describe('listPerspectives', () => {
 
   describe('filtering', () => {
     it('should filter out built-in perspectives when includeBuiltIn is false', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: mockPerspectives
       });
 
@@ -104,7 +104,7 @@ describe('listPerspectives', () => {
     });
 
     it('should filter out custom perspectives when includeCustom is false', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: mockPerspectives
       });
 
@@ -116,7 +116,7 @@ describe('listPerspectives', () => {
     });
 
     it('should return empty array when both filters are false', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: mockPerspectives
       });
 
@@ -132,7 +132,7 @@ describe('listPerspectives', () => {
 
   describe('error handling', () => {
     it('should handle script errors', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'Failed to list perspectives'
       });
 
@@ -143,7 +143,7 @@ describe('listPerspectives', () => {
     });
 
     it('should handle execution exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('Connection failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('Connection failed'));
 
       const result = await listPerspectives();
 
@@ -152,7 +152,7 @@ describe('listPerspectives', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await listPerspectives();
 
@@ -161,7 +161,7 @@ describe('listPerspectives', () => {
     });
 
     it('should handle missing perspectives array', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({});
+      mockExecuteOmniJS.mockResolvedValue({});
 
       const result = await listPerspectives();
 
@@ -172,7 +172,7 @@ describe('listPerspectives', () => {
 
   describe('perspective metadata', () => {
     it('should preserve perspective properties', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectives: [
           {
             id: 'custom-perspective',

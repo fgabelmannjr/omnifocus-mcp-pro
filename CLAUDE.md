@@ -208,7 +208,25 @@ Domain-specific rules in `.claude/rules/` load automatically:
 
 ## Recent Changes
 
+- **Test Coverage (2025-12-12)**: Test coverage gaps filled with 10 new test files
+  - Total: 1708 tests across 83 test files
+  - Added 9 missing unit tests (moveProject, editProject, createProject, getProject, deleteProject, listProjects, appendNote, getTask, listTasks)
+  - Added 1 integration test (deleteProject cascade deletion verification)
+  - All integration tests passing with recent bug fixes
+
 - 003-tasks: Added TypeScript 5.9+ with strict mode (`ES2024` target)
+
+- **Phase 4 Projects (Complete)**: Full project management tools (2025-12-12)
+  - `list_projects`: Comprehensive filtering (folder, status, review status, dates)
+  - `get_project`: Full project details with 30 properties
+  - `create_project`: Create with folder placement, type settings, review intervals
+  - `edit_project`: Modify all properties with auto-clear for conflicting types
+  - `delete_project`: Remove with cascade deletion of child tasks
+  - `move_project`: Move to folder, root, or relative to siblings
+  - Contracts in `src/contracts/project-tools/` with shared schemas
+  - Full TDD implementation with 356+ tests (contract + unit)
+  - Review status filtering for GTD workflows ('due', 'upcoming', 'any')
+  - Project type mutual exclusion: containsSingletonActions wins over sequential
 
 - **Phase 3 Tasks (Enhanced)**: Completed enhanced task management tools (2025-12-11)
   - `list_tasks`: Comprehensive task filtering (project, folder, tags, status, dates)

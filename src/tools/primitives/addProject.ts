@@ -1,6 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 // Interface for project creation parameters
 export interface AddProjectParams {
@@ -122,15 +121,9 @@ export async function addProject(
     };
   }
 
-  // Generate Omni Automation script
-  const script = generateOmniScript(params);
-
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'add_project', '.js');
-
   try {
-    // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
+    const script = generateOmniScript(params);
+    const result = (await executeOmniJS(script)) as {
       success: boolean;
       projectId?: string;
       name?: string;
@@ -159,8 +152,5 @@ export async function addProject(
       success: false,
       error: errorMessage || 'Unknown error in addProject'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

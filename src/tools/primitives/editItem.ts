@@ -1,6 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 // Status options for tasks and projects
 type TaskStatus = 'incomplete' | 'completed' | 'dropped';
@@ -328,12 +327,9 @@ export async function editItem(params: EditItemParams): Promise<{
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'edit_omnifocus', '.js');
-
   try {
     // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
+    const result = (await executeOmniJS(script)) as {
       success: boolean;
       id?: string;
       name?: string;
@@ -375,8 +371,5 @@ export async function editItem(params: EditItemParams): Promise<{
       success: false,
       error: errorMessage || 'Unknown error in editItem'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

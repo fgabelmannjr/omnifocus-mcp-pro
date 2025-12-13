@@ -2,8 +2,7 @@ import type {
   SetPlannedDateInput,
   SetPlannedDateResponse
 } from '../../contracts/task-tools/set-planned-date.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Set or clear the planned date for a task.
@@ -15,14 +14,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function setPlannedDate(params: SetPlannedDateInput): Promise<SetPlannedDateResponse> {
   const script = generateSetPlannedDateScript(params);
-  const tempFile = writeSecureTempFile(script, 'set_planned_date', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as SetPlannedDateResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as SetPlannedDateResponse;
 }
 
 /**

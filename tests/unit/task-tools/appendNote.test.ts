@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { appendNote } from '../../../src/tools/primitives/appendNote.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 // T037: Unit tests for appendNote primitive
@@ -19,7 +19,7 @@ describe('appendNote', () => {
       name: 'Test Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await appendNote({
       id: 'task123',
@@ -40,7 +40,7 @@ describe('appendNote', () => {
       name: 'Named Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await appendNote({
       name: 'Named Task',
@@ -57,7 +57,7 @@ describe('appendNote', () => {
       name: 'Test Task'
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await appendNote({
       id: 'task123',
@@ -65,7 +65,7 @@ describe('appendNote', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(executeOmniFocusScript).toHaveBeenCalled();
+    expect(executeOmniJS).toHaveBeenCalled();
   });
 
   it('should return error when task not found', async () => {
@@ -74,7 +74,7 @@ describe('appendNote', () => {
       error: "Task 'nonexistent' not found"
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await appendNote({
       id: 'nonexistent',
@@ -95,7 +95,7 @@ describe('appendNote', () => {
       matchingIds: ['task1', 'task2', 'task3']
     };
 
-    vi.mocked(executeOmniFocusScript).mockResolvedValue(JSON.stringify(mockResponse));
+    vi.mocked(executeOmniJS).mockResolvedValue(mockResponse);
 
     const result = await appendNote({
       name: 'Test',

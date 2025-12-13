@@ -1,17 +1,10 @@
 import type { AssignTagsInput, AssignTagsResponse } from '../../contracts/tag-tools/assign-tags.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 export async function assignTags(params: AssignTagsInput): Promise<AssignTagsResponse> {
   const script = generateAssignTagsScript(params);
-  const tempFile = writeSecureTempFile(script, 'assign_tags', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string);
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as AssignTagsResponse;
 }
 
 function generateAssignTagsScript(params: AssignTagsInput): string {

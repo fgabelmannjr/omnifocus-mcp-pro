@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { removeItem } from '../../../src/tools/primitives/removeItem.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('removeItem', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('removeItem', () => {
 
   describe('successful removal', () => {
     it('should remove a task by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Removed Task'
@@ -40,11 +33,11 @@ describe('removeItem', () => {
       expect(result.success).toBe(true);
       expect(result.id).toBe('task-123');
       expect(result.name).toBe('Removed Task');
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should remove a task by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-456',
         name: 'My Task'
@@ -57,7 +50,7 @@ describe('removeItem', () => {
     });
 
     it('should remove a project by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-123',
         name: 'Removed Project'
@@ -70,7 +63,7 @@ describe('removeItem', () => {
     });
 
     it('should remove a project by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-456',
         name: 'My Project'
@@ -82,7 +75,7 @@ describe('removeItem', () => {
     });
 
     it('should use name as fallback when ID search fails', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'fallback-id',
         name: 'Fallback Task'
@@ -100,7 +93,7 @@ describe('removeItem', () => {
 
   describe('error handling', () => {
     it('should handle item not found', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Item not found'
       });
@@ -112,7 +105,7 @@ describe('removeItem', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await removeItem({ itemType: 'task', id: 'task-123' });
 
@@ -121,7 +114,7 @@ describe('removeItem', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -133,7 +126,7 @@ describe('removeItem', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await removeItem({ itemType: 'task', id: 'task-123' });
 
@@ -143,7 +136,7 @@ describe('removeItem', () => {
 
   describe('input validation', () => {
     it('should return error when neither id nor name provided for task', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Either id or name must be provided'
       });
@@ -155,7 +148,7 @@ describe('removeItem', () => {
     });
 
     it('should return error when neither id nor name provided for project', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Either id or name must be provided'
       });
@@ -168,7 +161,7 @@ describe('removeItem', () => {
 
   describe('input sanitization', () => {
     it('should handle special characters in ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'escaped',
         name: 'Task'
@@ -183,7 +176,7 @@ describe('removeItem', () => {
     });
 
     it('should handle special characters in name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: '123',
         name: 'Escaped'

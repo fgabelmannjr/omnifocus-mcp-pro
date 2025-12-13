@@ -48,19 +48,6 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      - name: Verify JXA scripts
-        run: |
-          # Verify all JXA scripts are valid JavaScript
-          for script in src/utils/omnifocusScripts/*.js; do
-            if [ -f "$script" ]; then
-              node --check "$script" || {
-                echo "❌ Invalid JavaScript syntax in $script"
-                exit 1
-              }
-            fi
-          done
-          echo "✅ All JXA scripts have valid syntax"
-
       - name: Check for console.log statements
         run: |
           # Check for console.log in production code (excluding comments)

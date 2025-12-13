@@ -1,8 +1,7 @@
 import type { z } from 'zod';
 import type { Folder, ListFoldersInputSchema } from '../../contracts/folder-tools/list-folders.js';
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 // Use z.input for the parameter type (optional defaults) vs z.infer (required after defaults)
 type ListFoldersParams = z.input<typeof ListFoldersInputSchema>;
@@ -113,12 +112,9 @@ export async function listFolders(params: ListFoldersParams = {}): Promise<ListF
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'list_folders', '.js');
-
   try {
-    // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as ListFoldersResponse;
+    // Execute via Omni Automation (stdin piping, no temp files)
+    const result = (await executeOmniJS(script)) as ListFoldersResponse;
 
     // Use type guard for proper narrowing
     if (isErrorResponse(result)) {
@@ -139,8 +135,5 @@ export async function listFolders(params: ListFoldersParams = {}): Promise<ListF
       success: false,
       error: errorMessage || 'Unknown error in listFolders'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

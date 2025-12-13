@@ -1,6 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 // Interface for item removal parameters
 export interface RemoveItemParams {
@@ -118,12 +117,9 @@ export async function removeItem(
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'remove_omnifocus', '.js');
-
   try {
     // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
+    const result = (await executeOmniJS(script)) as {
       success: boolean;
       id?: string;
       name?: string;
@@ -155,8 +151,5 @@ export async function removeItem(
       success: false,
       error: errorMessage || 'Unknown error in removeItem'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

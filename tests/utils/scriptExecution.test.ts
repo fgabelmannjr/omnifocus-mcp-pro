@@ -1,46 +1,18 @@
+import type { ChildProcess } from 'node:child_process';
+import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Use vi.hoisted() so the mock is available during vi.mock() hoisting
-const { mockExecFileAsync } = vi.hoisted(() => ({
-  mockExecFileAsync: vi.fn()
+const { mockSpawn } = vi.hoisted(() => ({
+  mockSpawn: vi.fn()
 }));
 
-vi.mock('node:util', async (importOriginal) => {
-  const original = await importOriginal<typeof import('node:util')>();
+// Mock child_process.spawn for executeOmniJS
+vi.mock('node:child_process', async (importOriginal) => {
+  const original = await importOriginal<typeof import('node:child_process')>();
   return {
     ...original,
-    promisify: vi.fn(() => mockExecFileAsync)
-  };
-});
-
-// Mock secureTempFile
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
-}));
-
-// Mock fs module for the script reading
-vi.mock('node:fs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs')>();
-  return {
-    ...actual,
-    existsSync: vi.fn((path: string) => {
-      if (path.includes('omnifocusScripts')) {
-        return true;
-      }
-      return actual.existsSync(path);
-    }),
-    readFileSync: vi.fn((path: string) => {
-      if (path.includes('omnifocusScripts')) {
-        return '(() => { return JSON.stringify({ success: true }); })();';
-      }
-      if (path === '/path/to/script.js') {
-        return '(() => { return JSON.stringify({ success: true }); })();';
-      }
-      throw new Error(`ENOENT: no such file or directory, open '${path}'`);
-    })
+    spawn: mockSpawn
   };
 });
 
@@ -55,8 +27,39 @@ vi.mock('../../src/utils/logger.js', () => ({
 }));
 
 import { logger } from '../../src/utils/logger.js';
-// Import after mocking
-import { executeJXA, executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
+
+/**
+ * Helper to create a mock child process for spawn.
+ * Returns an EventEmitter that simulates stdout, stderr, stdin, and process events.
+ */
+function createMockChildProcess(
+  stdoutData: string,
+  stderrData: string,
+  exitCode: number
+): ChildProcess {
+  const proc = new EventEmitter() as ChildProcess;
+  const stdout = new EventEmitter();
+  const stderr = new EventEmitter();
+  const stdin = {
+    write: vi.fn(),
+    end: vi.fn()
+  };
+
+  // Assign streams to process
+  (proc as unknown as { stdout: EventEmitter }).stdout = stdout;
+  (proc as unknown as { stderr: EventEmitter }).stderr = stderr;
+  (proc as unknown as { stdin: typeof stdin }).stdin = stdin;
+
+  // Schedule data emission and close event for next tick
+  process.nextTick(() => {
+    if (stdoutData) stdout.emit('data', Buffer.from(stdoutData));
+    if (stderrData) stderr.emit('data', Buffer.from(stderrData));
+    proc.emit('close', exitCode);
+  });
+
+  return proc;
+}
 
 describe('scriptExecution', () => {
   beforeEach(() => {
@@ -67,170 +70,113 @@ describe('scriptExecution', () => {
     vi.restoreAllMocks();
   });
 
-  describe('executeJXA', () => {
-    it('should execute JXA script and return parsed JSON result', async () => {
-      const mockResult = { success: true, taskId: '123' };
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify(mockResult),
-        stderr: ''
-      });
+  describe('executeOmniJS', () => {
+    it('should execute script via stdin and return parsed JSON result', async () => {
+      const mockResult = { success: true, count: 10 };
+      const mockProc = createMockChildProcess(JSON.stringify(mockResult), '', 0);
+      mockSpawn.mockReturnValue(mockProc);
 
-      const result = await executeJXA('return JSON.stringify({ success: true, taskId: "123" });');
+      const result = await executeOmniJS(
+        '(function() { return JSON.stringify({ success: true, count: 10 }); })();'
+      );
 
       expect(result).toEqual(mockResult);
+      expect(mockSpawn).toHaveBeenCalledWith('osascript', ['-l', 'JavaScript', '-'], {
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+    });
+
+    it('should write script to stdin', async () => {
+      const mockProc = createMockChildProcess(JSON.stringify({ success: true }), '', 0);
+      mockSpawn.mockReturnValue(mockProc);
+
+      const script = '(function() { return JSON.stringify({ test: true }); })();';
+      await executeOmniJS(script);
+
+      // Verify stdin.write was called with JXA wrapper containing our script
+      expect(mockProc.stdin.write).toHaveBeenCalled();
+      expect(mockProc.stdin.end).toHaveBeenCalled();
     });
 
     it('should handle stderr output gracefully', async () => {
       const mockResult = { success: true };
+      const mockProc = createMockChildProcess(JSON.stringify(mockResult), 'Warning message', 0);
+      mockSpawn.mockReturnValue(mockProc);
 
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify(mockResult),
+      const result = await executeOmniJS('script');
+
+      expect(result).toEqual(mockResult);
+      expect(logger.warning).toHaveBeenCalledWith('Script stderr output', 'executeOmniJS', {
         stderr: 'Warning message'
       });
-
-      const result = await executeJXA('script');
-
-      expect(result).toEqual(mockResult);
-      expect(logger.warning).toHaveBeenCalledWith('Script stderr output', 'executeJXA', {
-        stderr: 'Warning message'
-      });
-    });
-
-    it('should return empty array for non-JSON output', async () => {
-      mockExecFileAsync.mockResolvedValue({
-        stdout: 'Not valid JSON',
-        stderr: ''
-      });
-
-      const result = await executeJXA('script');
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array for "Found X tasks" output', async () => {
-      mockExecFileAsync.mockResolvedValue({
-        stdout: 'Found 10 tasks in the database',
-        stderr: ''
-      });
-
-      const result = await executeJXA('script');
-
-      expect(result).toEqual([]);
-    });
-
-    it('should throw error when script execution fails', async () => {
-      const error = new Error('Execution failed');
-
-      mockExecFileAsync.mockRejectedValue(error);
-
-      await expect(executeJXA('script')).rejects.toThrow('Execution failed');
-    });
-
-    it('should clean up temp file after successful execution', async () => {
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify({ success: true }),
-        stderr: ''
-      });
-
-      await executeJXA('script');
-
-      expect(mockExecFileAsync).toHaveBeenCalled();
-    });
-
-    it('should clean up temp file after failed execution', async () => {
-      const error = new Error('Execution failed');
-
-      mockExecFileAsync.mockRejectedValue(error);
-
-      await expect(executeJXA('script')).rejects.toThrow();
-    });
-  });
-
-  describe('executeOmniFocusScript', () => {
-    it('should execute script from @ path (built-in script)', async () => {
-      const mockResult = { success: true, data: [] };
-
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify(mockResult),
-        stderr: ''
-      });
-
-      const result = await executeOmniFocusScript('@testScript.js');
-
-      expect(result).toEqual(mockResult);
-    });
-
-    it('should execute script from absolute path', async () => {
-      const mockResult = { success: true };
-
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify(mockResult),
-        stderr: ''
-      });
-
-      const result = await executeOmniFocusScript('/path/to/script.js');
-
-      expect(result).toEqual(mockResult);
-    });
-
-    it('should handle stderr output', async () => {
-      const mockResult = { success: true };
-
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify(mockResult),
-        stderr: 'Some stderr'
-      });
-
-      await executeOmniFocusScript('@testScript.js');
-
-      expect(logger.warning).toHaveBeenCalledWith(
-        'Script stderr output',
-        'executeOmniFocusScript',
-        { stderr: 'Some stderr' }
-      );
     });
 
     it('should return raw output when JSON parsing fails', async () => {
-      mockExecFileAsync.mockResolvedValue({
-        stdout: 'Not valid JSON output',
-        stderr: ''
-      });
+      const mockProc = createMockChildProcess('Not valid JSON', '', 0);
+      mockSpawn.mockReturnValue(mockProc);
 
-      const result = await executeOmniFocusScript('@testScript.js');
+      const result = await executeOmniJS('script');
 
-      expect(result).toBe('Not valid JSON output');
+      expect(result).toBe('Not valid JSON');
+      expect(logger.error).toHaveBeenCalledWith(
+        'Error parsing script output',
+        'executeOmniJS',
+        expect.any(Object)
+      );
     });
 
-    it('should throw error when execution fails', async () => {
-      const error = new Error('Script failed');
+    it('should reject when osascript exits with non-zero code', async () => {
+      const mockProc = createMockChildProcess('', 'Error: script failed', 1);
+      mockSpawn.mockReturnValue(mockProc);
 
-      mockExecFileAsync.mockRejectedValue(error);
-
-      await expect(executeOmniFocusScript('@testScript.js')).rejects.toThrow('Script failed');
+      await expect(executeOmniJS('script')).rejects.toThrow('osascript exited with code 1');
     });
 
-    it('should properly escape script content', async () => {
-      const mockResult = { success: true };
+    it('should reject when spawn fails', async () => {
+      const mockProc = new EventEmitter() as ChildProcess;
+      const stdout = new EventEmitter();
+      const stderr = new EventEmitter();
+      (mockProc as unknown as { stdout: EventEmitter }).stdout = stdout;
+      (mockProc as unknown as { stderr: EventEmitter }).stderr = stderr;
+      (mockProc as unknown as { stdin: { write: () => void; end: () => void } }).stdin = {
+        write: vi.fn(),
+        end: vi.fn()
+      };
 
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify(mockResult),
-        stderr: ''
+      mockSpawn.mockReturnValue(mockProc);
+
+      const promise = executeOmniJS('script');
+
+      // Emit error event
+      process.nextTick(() => {
+        mockProc.emit('error', new Error('spawn ENOENT'));
       });
 
-      await executeOmniFocusScript('@testScript.js');
-
-      expect(mockExecFileAsync).toHaveBeenCalled();
+      await expect(promise).rejects.toThrow('Failed to execute osascript: spawn ENOENT');
     });
 
-    it('should clean up temp file after execution', async () => {
-      mockExecFileAsync.mockResolvedValue({
-        stdout: JSON.stringify({ success: true }),
-        stderr: ''
-      });
+    it('should throw error for empty script content', async () => {
+      await expect(executeOmniJS('')).rejects.toThrow('Script content must be a non-empty string');
+    });
 
-      await executeOmniFocusScript('@testScript.js');
+    it('should throw error for whitespace-only script content', async () => {
+      await expect(executeOmniJS('   ')).rejects.toThrow(
+        'Script content must be a non-empty string'
+      );
+    });
 
-      expect(mockExecFileAsync).toHaveBeenCalled();
+    it('should properly escape special characters in script', async () => {
+      const mockProc = createMockChildProcess(JSON.stringify({ success: true }), '', 0);
+      mockSpawn.mockReturnValue(mockProc);
+
+      // Script with backticks, backslashes, and dollar signs
+      const script =
+        '(function() { var str = `test`; var path = "C:\\\\path"; var $var = 1; return JSON.stringify({ success: true }); })();';
+      await executeOmniJS(script);
+
+      // Verify spawn was called (escaping happens internally)
+      expect(mockSpawn).toHaveBeenCalled();
+      expect(mockProc.stdin.write).toHaveBeenCalled();
     });
   });
 });

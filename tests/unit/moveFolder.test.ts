@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { moveFolder } from '../../src/tools/primitives/moveFolder.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('moveFolder', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('moveFolder', () => {
 
   describe('successful moves by ID', () => {
     it('should move folder to library ending by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-123',
         name: 'Moved Folder'
@@ -45,11 +38,11 @@ describe('moveFolder', () => {
         expect(result.id).toBe('folder-123');
         expect(result.name).toBe('Moved Folder');
       }
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should move folder to library beginning by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-456',
         name: 'Work'
@@ -64,7 +57,7 @@ describe('moveFolder', () => {
     });
 
     it('should move folder inside parent folder', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-child',
         name: 'Projects'
@@ -82,7 +75,7 @@ describe('moveFolder', () => {
     });
 
     it('should move folder before sibling', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-moved',
         name: 'My Folder'
@@ -97,7 +90,7 @@ describe('moveFolder', () => {
     });
 
     it('should move folder after sibling', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-moved-2',
         name: 'Another Folder'
@@ -114,7 +107,7 @@ describe('moveFolder', () => {
 
   describe('successful moves by name', () => {
     it('should move folder when found by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-found',
         name: 'Archive'
@@ -134,7 +127,7 @@ describe('moveFolder', () => {
 
   describe('disambiguation scenarios', () => {
     it('should return disambiguation error for multiple name matches', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Ambiguous name 'Work': found 3 matches",
         code: 'DISAMBIGUATION_REQUIRED',
@@ -159,7 +152,7 @@ describe('moveFolder', () => {
     });
 
     it('should return disambiguation with two matches', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Ambiguous name 'Archive': found 2 matches",
         code: 'DISAMBIGUATION_REQUIRED',
@@ -180,7 +173,7 @@ describe('moveFolder', () => {
 
   describe('circular move detection', () => {
     it('should return error when moving folder into its own descendant', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Cannot move folder 'folder-123': target is a descendant of source"
       });
@@ -199,7 +192,7 @@ describe('moveFolder', () => {
 
   describe('error handling', () => {
     it('should return error for invalid ID (not found)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid id 'xyz': folder not found"
       });
@@ -217,7 +210,7 @@ describe('moveFolder', () => {
     });
 
     it('should return error for invalid name (not found)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid name 'Nonexistent': folder not found"
       });
@@ -235,7 +228,7 @@ describe('moveFolder', () => {
     });
 
     it('should return error for invalid relativeTo folder', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid relativeTo 'nonexistent': folder not found"
       });
@@ -252,7 +245,7 @@ describe('moveFolder', () => {
     });
 
     it('should return error for library move attempt', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Cannot move library: not a valid folder target'
       });
@@ -269,7 +262,7 @@ describe('moveFolder', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await moveFolder({
         id: 'folder-123',
@@ -283,7 +276,7 @@ describe('moveFolder', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -300,7 +293,7 @@ describe('moveFolder', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await moveFolder({
         id: 'folder-123',
@@ -313,7 +306,7 @@ describe('moveFolder', () => {
 
   describe('ID takes precedence over name', () => {
     it('should use ID when both ID and name provided', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-123',
         name: 'Moved'
@@ -334,7 +327,7 @@ describe('moveFolder', () => {
 
   describe('response properties', () => {
     it('should return folder with all required fields', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'folder-full',
         name: 'Complete Folder'

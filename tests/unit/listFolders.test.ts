@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { listFolders } from '../../src/tools/primitives/listFolders.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('listFolders', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('listFolders', () => {
 
   describe('successful queries', () => {
     it('should return all folders when no parameters provided', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [
           { id: 'folder-1', name: 'Work', status: 'active', parentId: null },
@@ -44,11 +37,11 @@ describe('listFolders', () => {
         expect(result.folders).toHaveLength(2);
         expect(result.folders[0].name).toBe('Work');
       }
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should return empty array when no folders exist', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: []
       });
@@ -62,7 +55,7 @@ describe('listFolders', () => {
     });
 
     it('should filter by active status', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [{ id: 'folder-1', name: 'Work', status: 'active', parentId: null }]
       });
@@ -76,7 +69,7 @@ describe('listFolders', () => {
     });
 
     it('should filter by dropped status', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [{ id: 'folder-2', name: 'Archive', status: 'dropped', parentId: null }]
       });
@@ -90,7 +83,7 @@ describe('listFolders', () => {
     });
 
     it('should filter by parentId', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [
           { id: 'folder-child-1', name: 'Projects', status: 'active', parentId: 'folder-parent' }
@@ -106,7 +99,7 @@ describe('listFolders', () => {
     });
 
     it('should return only top-level folders when includeChildren is false', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [
           { id: 'folder-1', name: 'Work', status: 'active', parentId: null },
@@ -124,7 +117,7 @@ describe('listFolders', () => {
     });
 
     it('should include nested folders when includeChildren is true (default)', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [
           { id: 'folder-1', name: 'Work', status: 'active', parentId: null },
@@ -144,7 +137,7 @@ describe('listFolders', () => {
     });
 
     it('should combine status and parentId filters', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [
           {
@@ -168,7 +161,7 @@ describe('listFolders', () => {
 
   describe('error handling', () => {
     it('should return error for invalid parentId', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: "Invalid parentId 'xyz': folder not found"
       });
@@ -183,7 +176,7 @@ describe('listFolders', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await listFolders({});
 
@@ -194,7 +187,7 @@ describe('listFolders', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -208,7 +201,7 @@ describe('listFolders', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await listFolders({});
 
@@ -218,7 +211,7 @@ describe('listFolders', () => {
 
   describe('folder properties', () => {
     it('should return folders with all required fields', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [{ id: 'folder-123', name: 'Test Folder', status: 'active', parentId: null }]
       });
@@ -236,7 +229,7 @@ describe('listFolders', () => {
     });
 
     it('should handle folders with special characters in names', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         folders: [
           { id: 'folder-1', name: 'Work & Projects', status: 'active', parentId: null },

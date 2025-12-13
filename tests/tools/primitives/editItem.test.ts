@@ -2,20 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies for Omni Automation approach
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 import { editItem } from '../../../src/tools/primitives/editItem.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('editItem', () => {
   beforeEach(() => {
@@ -29,7 +22,7 @@ describe('editItem', () => {
 
   describe('successful edits', () => {
     it('should edit a task by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Updated Task',
@@ -45,11 +38,11 @@ describe('editItem', () => {
       expect(result.success).toBe(true);
       expect(result.id).toBe('task-123');
       expect(result.changedProperties).toBe('name');
-      expect(mockExecuteOmniFocusScript).toHaveBeenCalledTimes(1);
+      expect(mockExecuteOmniJS).toHaveBeenCalledTimes(1);
     });
 
     it('should edit a task by name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-456',
         name: 'My Task',
@@ -66,7 +59,7 @@ describe('editItem', () => {
     });
 
     it('should edit a project by ID', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-123',
         name: 'My Project',
@@ -83,7 +76,7 @@ describe('editItem', () => {
     });
 
     it('should edit multiple properties at once', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -107,7 +100,7 @@ describe('editItem', () => {
 
   describe('task status changes', () => {
     it('should mark task as completed', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -125,7 +118,7 @@ describe('editItem', () => {
     });
 
     it('should mark task as dropped', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -142,7 +135,7 @@ describe('editItem', () => {
     });
 
     it('should mark task as incomplete', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -161,7 +154,7 @@ describe('editItem', () => {
 
   describe('project status changes', () => {
     it('should set project status to active', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-123',
         name: 'Project',
@@ -178,7 +171,7 @@ describe('editItem', () => {
     });
 
     it('should set project status to onHold', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-123',
         name: 'Project',
@@ -197,7 +190,7 @@ describe('editItem', () => {
 
   describe('date handling', () => {
     it('should update due date', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -214,7 +207,7 @@ describe('editItem', () => {
     });
 
     it('should clear due date with empty string', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -231,7 +224,7 @@ describe('editItem', () => {
     });
 
     it('should update defer date', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -250,7 +243,7 @@ describe('editItem', () => {
 
   describe('tag operations', () => {
     it('should add tags to task', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -267,7 +260,7 @@ describe('editItem', () => {
     });
 
     it('should remove tags from task', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -284,7 +277,7 @@ describe('editItem', () => {
     });
 
     it('should replace all tags', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'task-123',
         name: 'Task',
@@ -303,7 +296,7 @@ describe('editItem', () => {
 
   describe('project-specific options', () => {
     it('should update sequential setting', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-123',
         name: 'Project',
@@ -320,7 +313,7 @@ describe('editItem', () => {
     });
 
     it('should move project to new folder', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: true,
         id: 'project-123',
         name: 'Project',
@@ -339,7 +332,7 @@ describe('editItem', () => {
 
   describe('error handling', () => {
     it('should handle item not found', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Item not found'
       });
@@ -354,7 +347,7 @@ describe('editItem', () => {
     });
 
     it('should handle Omni Automation execution error', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('OmniFocus script execution failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('OmniFocus script execution failed'));
 
       const result = await editItem({
         itemType: 'task',
@@ -366,7 +359,7 @@ describe('editItem', () => {
     });
 
     it('should handle script error response', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Script error occurred'
       });
@@ -381,7 +374,7 @@ describe('editItem', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await editItem({
         itemType: 'task',
@@ -394,7 +387,7 @@ describe('editItem', () => {
 
   describe('input validation', () => {
     it('should return error when neither id nor name provided', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         success: false,
         error: 'Either id or name must be provided'
       });

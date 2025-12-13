@@ -1,7 +1,6 @@
 import type { OmnifocusDatabase } from '../types.js';
 import { getCacheManager } from '../utils/cacheManager.js';
-import { executeOmniFocusScript } from '../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../utils/secureTempFile.js';
+import { executeOmniJS } from '../utils/scriptExecution.js';
 import { dumpDatabase as originalDumpDatabase } from './dumpDatabase.js';
 
 /**
@@ -116,33 +115,26 @@ export async function getDatabaseStats(): Promise<{
     })();
   `;
 
-  // Write script to secure temp file and execute
-  const tempFile = writeSecureTempFile(script, 'omnifocus_stats', '.js');
+  const result = (await executeOmniJS(script)) as {
+    error?: string;
+    taskCount: number;
+    activeTaskCount: number;
+    projectCount: number;
+    activeProjectCount: number;
+    folderCount: number;
+    tagCount: number;
+    overdueCount: number;
+    nextActionCount: number;
+    flaggedCount: number;
+    inboxCount: number;
+    lastModified: string;
+  };
 
-  try {
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
-      error?: string;
-      taskCount: number;
-      activeTaskCount: number;
-      projectCount: number;
-      activeProjectCount: number;
-      folderCount: number;
-      tagCount: number;
-      overdueCount: number;
-      nextActionCount: number;
-      flaggedCount: number;
-      inboxCount: number;
-      lastModified: string;
-    };
-
-    if (result.error) {
-      throw new Error(result.error);
-    }
-
-    return result;
-  } finally {
-    tempFile.cleanup();
+  if (result.error) {
+    throw new Error(result.error);
   }
+
+  return result;
 }
 
 /**
@@ -230,25 +222,18 @@ export async function getChangesSince(since: Date): Promise<{
     })();
   `;
 
-  // Write script to secure temp file and execute
-  const tempFile = writeSecureTempFile(script, 'omnifocus_changes', '.js');
+  const result = (await executeOmniJS(script)) as {
+    error?: string;
+    newTasks: unknown[];
+    updatedTasks: unknown[];
+    completedTasks: unknown[];
+    newProjects: unknown[];
+    updatedProjects: unknown[];
+  };
 
-  try {
-    const result = (await executeOmniFocusScript(tempFile.path)) as {
-      error?: string;
-      newTasks: unknown[];
-      updatedTasks: unknown[];
-      completedTasks: unknown[];
-      newProjects: unknown[];
-      updatedProjects: unknown[];
-    };
-
-    if (result.error) {
-      throw new Error(result.error);
-    }
-
-    return result;
-  } finally {
-    tempFile.cleanup();
+  if (result.error) {
+    throw new Error(result.error);
   }
+
+  return result;
 }

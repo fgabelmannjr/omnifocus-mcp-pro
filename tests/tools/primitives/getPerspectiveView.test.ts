@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 import { getPerspectiveView } from '../../../src/tools/primitives/getPerspectiveView.js';
-import { executeOmniFocusScript } from '../../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('getPerspectiveView', () => {
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe('getPerspectiveView', () => {
 
   describe('successful view retrieval', () => {
     it('should get perspective view successfully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: mockItems
       });
@@ -66,7 +66,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should get perspective view with matching perspective name', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Forecast',
         items: mockItems
       });
@@ -79,7 +79,7 @@ describe('getPerspectiveView', () => {
     it('should warn when current perspective differs from requested', async () => {
       const warnSpy = vi.spyOn(console, 'warn');
 
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Projects',
         items: mockItems
       });
@@ -95,7 +95,7 @@ describe('getPerspectiveView', () => {
 
   describe('limit handling', () => {
     it('should limit results to specified count', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: mockItems
       });
@@ -115,7 +115,7 @@ describe('getPerspectiveView', () => {
         name: `Task ${i}`
       }));
 
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: manyItems
       });
@@ -127,7 +127,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should return all items when less than limit', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: mockItems
       });
@@ -144,7 +144,7 @@ describe('getPerspectiveView', () => {
 
   describe('field filtering', () => {
     it('should return only specified fields', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: mockItems
       });
@@ -161,7 +161,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should handle fields that do not exist on item', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: [{ id: 'task-1', name: 'Task 1' }]
       });
@@ -176,7 +176,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should return all fields when fields array is empty', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: mockItems
       });
@@ -193,7 +193,7 @@ describe('getPerspectiveView', () => {
 
   describe('error handling', () => {
     it('should handle script errors', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'Failed to get perspective view'
       });
 
@@ -204,7 +204,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should handle execution exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('Connection failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('Connection failed'));
 
       const result = await getPerspectiveView({ perspectiveName: 'Inbox' });
 
@@ -213,7 +213,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockExecuteOmniFocusScript.mockRejectedValue('String error');
+      mockExecuteOmniJS.mockRejectedValue('String error');
 
       const result = await getPerspectiveView({ perspectiveName: 'Inbox' });
 
@@ -222,7 +222,7 @@ describe('getPerspectiveView', () => {
     });
 
     it('should handle missing items array', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox'
       });
 
@@ -235,7 +235,7 @@ describe('getPerspectiveView', () => {
 
   describe('combined options', () => {
     it('should apply both limit and field filtering', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'Inbox',
         items: mockItems
       });
@@ -258,7 +258,7 @@ describe('getPerspectiveView', () => {
     it('should match perspective name case-insensitively', async () => {
       const warnSpy = vi.spyOn(console, 'warn');
 
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         perspectiveName: 'INBOX',
         items: mockItems
       });

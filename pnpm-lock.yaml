@@ -11,9 +11,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.24.3
         version: 1.24.3(zod@4.1.13)
-      tmp:
-        specifier: ^0.2.5
-        version: 0.2.5
       zod:
         specifier: ^4.1.13
         version: 4.1.13
@@ -24,9 +21,6 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.10.2
-      '@types/tmp':
-        specifier: ^0.2.6
-        version: 0.2.6
       '@vitest/coverage-v8':
         specifier: ^4.0.15
         version: 4.0.15(vitest@4.0.15(@types/node@24.10.2)(tsx@4.21.0)(yaml@2.8.2))
@@ -584,9 +578,6 @@ packages:
 
   '@types/node@24.10.2':
     resolution: {integrity: sha512-WOhQTZ4G8xZ1tjJTvKOpyEVSGgOTvJAfDK3FNFgELyaTpzhdgHVHeqW8V+UJvzF5BT+/B54T/1S2K6gd9c7bbA==}
-
-  '@types/tmp@0.2.6':
-    resolution: {integrity: sha512-chhaNf2oKHlRkDGt+tiKE2Z5aJ6qalm7Z9rlLdBwmOiAAf09YQvvoLXjWK4HWPF1xU/fqvMgfNfpVoBscA/tKA==}
 
   '@vitest/coverage-v8@4.0.15':
     resolution: {integrity: sha512-FUJ+1RkpTFW7rQITdgTi93qOCWJobWhBirEPCeXh2SW2wsTlFxy51apDz5gzG+ZEYt/THvWeNmhdAoS9DTwpCw==}
@@ -1324,10 +1315,6 @@ packages:
     resolution: {integrity: sha512-PSkbLUoxOFRzJYjjxHJt9xro7D+iilgMX/C9lawzVuYiIdcihh9DXmVibBe8lmcFrRi/VzlPjBxbN7rH24q8/Q==}
     engines: {node: '>=14.0.0'}
 
-  tmp@0.2.5:
-    resolution: {integrity: sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==}
-    engines: {node: '>=14.14'}
-
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -1815,8 +1802,6 @@ snapshots:
   '@types/node@24.10.2':
     dependencies:
       undici-types: 7.16.0
-
-  '@types/tmp@0.2.6': {}
 
   '@vitest/coverage-v8@4.0.15(vitest@4.0.15(@types/node@24.10.2)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
@@ -2616,8 +2601,6 @@ snapshots:
       picomatch: 4.0.3
 
   tinyrainbow@3.0.3: {}
-
-  tmp@0.2.5: {}
 
   to-regex-range@5.0.1:
     dependencies:

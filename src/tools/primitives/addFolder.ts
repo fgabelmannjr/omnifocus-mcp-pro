@@ -1,7 +1,6 @@
 import type { AddFolderInput } from '../../contracts/folder-tools/add-folder.js';
 import { logger } from '../../utils/logger.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Response type for addFolder
@@ -98,12 +97,9 @@ export async function addFolder(params: AddFolderInput): Promise<AddFolderRespon
   // Generate Omni Automation script
   const script = generateOmniScript(params);
 
-  // Write script to secure temporary file
-  const tempFile = writeSecureTempFile(script, 'add_folder', '.js');
-
   try {
-    // Execute via Omni Automation
-    const result = (await executeOmniFocusScript(tempFile.path)) as AddFolderResponse;
+    // Execute via Omni Automation (stdin piping, no temp files)
+    const result = (await executeOmniJS(script)) as AddFolderResponse;
 
     // Pass through the result (success, or error)
     return result;
@@ -114,8 +110,5 @@ export async function addFolder(params: AddFolderInput): Promise<AddFolderRespon
       success: false,
       error: errorMessage || 'Unknown error in addFolder'
     };
-  } finally {
-    // Clean up temp file
-    tempFile.cleanup();
   }
 }

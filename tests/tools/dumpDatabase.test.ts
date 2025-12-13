@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
+  executeOmniJS: vi.fn()
 }));
 
 import { dumpDatabase } from '../../src/tools/dumpDatabase.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('dumpDatabase', () => {
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('dumpDatabase', () => {
 
   describe('successful dump', () => {
     it('should return complete database with all entities', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         exportDate: '2024-12-25T00:00:00Z',
         tasks: [
           {
@@ -100,7 +100,7 @@ describe('dumpDatabase', () => {
     });
 
     it('should return empty database when no data returned', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue(null);
+      mockExecuteOmniJS.mockResolvedValue(null);
 
       const resultPromise = dumpDatabase();
       await vi.advanceTimersByTimeAsync(1000);
@@ -113,7 +113,7 @@ describe('dumpDatabase', () => {
     });
 
     it('should handle missing tag lookups gracefully', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         exportDate: '2024-12-25T00:00:00Z',
         tasks: [
           {
@@ -139,7 +139,7 @@ describe('dumpDatabase', () => {
     });
 
     it('should convert task status to active/inactive correctly', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         exportDate: '2024-12-25T00:00:00Z',
         tasks: [
           {
@@ -187,7 +187,7 @@ describe('dumpDatabase', () => {
     });
 
     it('should handle tasks with children', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         exportDate: '2024-12-25T00:00:00Z',
         tasks: [
           {
@@ -217,7 +217,7 @@ describe('dumpDatabase', () => {
   describe('error handling', () => {
     it('should throw error when script execution fails', async () => {
       vi.useRealTimers(); // Use real timers for this test
-      mockExecuteOmniFocusScript.mockRejectedValue(new Error('Script failed'));
+      mockExecuteOmniJS.mockRejectedValue(new Error('Script failed'));
 
       await expect(dumpDatabase()).rejects.toThrow('Script failed');
     });
@@ -225,7 +225,7 @@ describe('dumpDatabase', () => {
 
   describe('data conversion', () => {
     it('should handle empty tasks array', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         exportDate: '2024-12-25T00:00:00Z',
         tasks: [],
         projects: {},
@@ -241,7 +241,7 @@ describe('dumpDatabase', () => {
     });
 
     it('should handle null dates correctly', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         exportDate: '2024-12-25T00:00:00Z',
         tasks: [
           {

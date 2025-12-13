@@ -1,6 +1,5 @@
 import type { DeleteTagInput, DeleteTagResponse } from '../../contracts/tag-tools/delete-tag.js';
-import { executeOmniFocusScript } from '../../utils/scriptExecution.js';
-import { writeSecureTempFile } from '../../utils/secureTempFile.js';
+import { executeOmniJS } from '../../utils/scriptExecution.js';
 
 /**
  * Deletes a tag from OmniFocus by ID or name.
@@ -12,14 +11,8 @@ import { writeSecureTempFile } from '../../utils/secureTempFile.js';
  */
 export async function deleteTag(params: DeleteTagInput): Promise<DeleteTagResponse> {
   const script = generateDeleteTagScript(params);
-  const tempFile = writeSecureTempFile(script, 'delete_tag', '.js');
-
-  try {
-    const result = await executeOmniFocusScript(tempFile.path);
-    return JSON.parse(result as string) as DeleteTagResponse;
-  } finally {
-    tempFile.cleanup();
-  }
+  const result = await executeOmniJS(script);
+  return result as DeleteTagResponse;
 }
 
 /**

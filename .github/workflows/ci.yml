@@ -153,20 +153,6 @@ jobs:
 
           echo "✅ Build artifacts verified"
 
-      - name: Verify JXA scripts copied
-        run: |
-          if [ ! -d "dist/utils/omnifocusScripts" ]; then
-            echo "❌ JXA scripts directory not found"
-            exit 1
-          fi
-
-          if [ ! -f "dist/utils/omnifocusScripts/omnifocusDump.js" ]; then
-            echo "❌ omnifocusDump.js not copied"
-            exit 1
-          fi
-
-          echo "✅ JXA scripts copied successfully"
-
   validate-structure:
     name: Validate Project Structure
     runs-on: ubuntu-latest
@@ -182,10 +168,6 @@ jobs:
           [ -f "src/omnifocustypes.ts" ] || { echo "❌ src/omnifocustypes.ts missing"; exit 1; }
           [ -d "src/tools" ] || { echo "❌ src/tools directory missing"; exit 1; }
           [ -d "src/utils" ] || { echo "❌ src/utils directory missing"; exit 1; }
-
-          # Check for JXA scripts
-          [ -d "src/utils/omnifocusScripts" ] || { echo "❌ JXA scripts directory missing"; exit 1; }
-          [ -f "src/utils/omnifocusScripts/omnifocusDump.js" ] || { echo "❌ omnifocusDump.js missing"; exit 1; }
 
           # Check for required config files
           [ -f "package.json" ] || { echo "❌ package.json missing"; exit 1; }

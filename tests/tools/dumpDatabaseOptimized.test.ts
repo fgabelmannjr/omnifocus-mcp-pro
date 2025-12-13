@@ -6,14 +6,7 @@ vi.mock('../../src/utils/cacheManager.js', () => ({
 }));
 
 vi.mock('../../src/utils/scriptExecution.js', () => ({
-  executeOmniFocusScript: vi.fn()
-}));
-
-vi.mock('../../src/utils/secureTempFile.js', () => ({
-  writeSecureTempFile: vi.fn(() => ({
-    path: '/tmp/mock_script.js',
-    cleanup: vi.fn()
-  }))
+  executeOmniJS: vi.fn()
 }));
 
 vi.mock('../../src/tools/dumpDatabase.js', () => ({
@@ -28,11 +21,11 @@ import {
 } from '../../src/tools/dumpDatabaseOptimized.js';
 import type { OmnifocusDatabase } from '../../src/types.js';
 import { getCacheManager } from '../../src/utils/cacheManager.js';
-import { executeOmniFocusScript } from '../../src/utils/scriptExecution.js';
+import { executeOmniJS } from '../../src/utils/scriptExecution.js';
 
 const mockGetCacheManager = vi.mocked(getCacheManager);
 const mockDumpDatabase = vi.mocked(dumpDatabase);
-const mockExecuteOmniFocusScript = vi.mocked(executeOmniFocusScript);
+const mockExecuteOmniJS = vi.mocked(executeOmniJS);
 
 describe('dumpDatabaseOptimized', () => {
   const mockDatabase: OmnifocusDatabase = {
@@ -115,7 +108,7 @@ describe('dumpDatabaseOptimized', () => {
 
   describe('getDatabaseStats', () => {
     it('should return database statistics', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         taskCount: 100,
         activeTaskCount: 75,
         projectCount: 20,
@@ -139,7 +132,7 @@ describe('dumpDatabaseOptimized', () => {
     });
 
     it('should throw error when script returns error', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'Failed to get database stats'
       });
 
@@ -149,7 +142,7 @@ describe('dumpDatabaseOptimized', () => {
 
   describe('getChangesSince', () => {
     it('should return changes since specified date', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         newTasks: [{ id: 'new-task', name: 'New Task' }],
         updatedTasks: [{ id: 'updated-task', name: 'Updated Task' }],
         completedTasks: [{ id: 'completed-task', name: 'Completed Task' }],
@@ -167,7 +160,7 @@ describe('dumpDatabaseOptimized', () => {
     });
 
     it('should throw error when script returns error', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         error: 'Failed to get changes'
       });
 
@@ -175,7 +168,7 @@ describe('dumpDatabaseOptimized', () => {
     });
 
     it('should handle empty change sets', async () => {
-      mockExecuteOmniFocusScript.mockResolvedValue({
+      mockExecuteOmniJS.mockResolvedValue({
         newTasks: [],
         updatedTasks: [],
         completedTasks: [],
