@@ -208,6 +208,13 @@ Domain-specific rules in `.claude/rules/` load automatically:
 
 ## Recent Changes
 
+- **Phase 5 Review System (Spec Complete)**: Review System specification completed (2025-12-30)
+  - 3 tools: `get_projects_for_review`, `mark_reviewed`, `set_review_interval`
+  - Critical API discovery: No `markReviewed()` method - must set `nextReviewDate` directly
+  - `lastReviewDate` is READ-ONLY; `nextReviewDate` is WRITABLE
+  - ReviewInterval uses value object semantics (must reassign entire object)
+  - Spec, requirements checklist, and plan document updated
+
 - **Test Coverage (2025-12-12)**: Test coverage gaps filled with 10 new test files
   - Total: 1708 tests across 83 test files
   - Added 9 missing unit tests (moveProject, editProject, createProject, getProject, deleteProject, listProjects, appendNote, getTask, listTasks)

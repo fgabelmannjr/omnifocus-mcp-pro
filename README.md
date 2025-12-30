@@ -32,7 +32,7 @@ implementation phases.
 | 2     | Tags                           | 6     | Complete |
 | 3     | **Tasks (Enhanced)**           | 4     | Complete |
 | 4     | **Projects**                   | 6     | Complete |
-| 5     | **Review System**              | 3     | Pending  |
+| 5     | **Review System**              | 3     | Spec ✓   |
 | 6     | Notifications                  | 5     | Pending  |
 | 7     | Repetition                     | 5     | Pending  |
 | 8     | **Perspectives**               | 5     | Pending  |
