@@ -34,6 +34,7 @@ Phase 5 adds dedicated review-specific tools for more granular control.
 ### Session 2025-12-30
 
 - Q: When setting interval on project without one, what should initial `nextReviewDate` be? → A: Today + interval (first review is one interval away)
+- Q: Should `set_review_interval` support batch operations (multiple projects at once)? → A: Yes, batch support with same interval applied to all projects (consistency with `mark_reviewed`)
 
 ### Critical API Discovery
 
@@ -164,6 +165,14 @@ verifying the project's `reviewInterval` property changes accordingly.
    **When** I call `set_review_interval`,
    **Then** I receive a validation error (steps must be positive integer).
 
+7. **Given** I want to set the same review interval on multiple projects,
+   **When** I call `set_review_interval` with an array of project IDs and an interval,
+   **Then** each project is processed and I receive per-project results.
+
+8. **Given** a batch contains some invalid project IDs,
+   **When** I call `set_review_interval` with the batch,
+   **Then** valid projects are updated and invalid ones return errors.
+
 ---
 
 ### Edge Cases
@@ -228,6 +237,11 @@ verifying the project's `reviewInterval` property changes accordingly.
 - **FR-028**: Tool MUST return updated project data including new `reviewInterval`
 - **FR-029**: Tool MUST support both ID and name-based project lookup
 - **FR-030**: Tool MUST return disambiguation error when name matches multiple projects
+- **FR-030a**: Tool MUST accept single project ID/name or array of project IDs/names
+- **FR-030b**: Tool MUST apply the same interval to all projects in batch operations
+- **FR-030c**: Tool MUST process batch operations with per-item results
+- **FR-030d**: Tool MUST NOT fail entire batch if some items fail
+- **FR-030e**: Tool MUST preserve original array indices in batch results
 
 ### Error Handling Requirements
 
@@ -368,7 +382,7 @@ Represents the cadence for project reviews.
 
 ### Definition of Done
 
-- [ ] All functional requirements (FR-001 through FR-033) implemented
+- [ ] All functional requirements (FR-001 through FR-036, including FR-030a through FR-030e) implemented
 - [ ] Contract tests validate input/output schemas
 - [ ] Unit tests cover all acceptance scenarios
 - [ ] Integration tests verify OmniFocus interaction
